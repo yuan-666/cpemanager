@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cpemanager"
+version = "0.1.0"
+description = "Command-line Huawei CPE management toolkit"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "requests>=2.31,<3",
+]
+authors = [
+    { name = "Yuan Huang", email = "2991077067@qq.com" },
+]
+keywords = ["cpe", "huawei", "router", "lte", "nr", "5g"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Networking",
+]
+
+[project.scripts]
+cpemanager = "cpemanager.cli:main"
+cpemanager-desktop = "cpemanager.gui:main"
+
+[project.optional-dependencies]
+desktop-build = [
+    "pyinstaller>=6.0,<7",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]

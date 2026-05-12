@@ -1,0 +1,23 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+build/
+dist/
+*.egg-info/
+*.spec
+.pyinstaller/
+.venv/
+env/
+
+# Flutter/Dart generated files
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+apps/flutter_cpemanager/.dart_tool/
+apps/flutter_cpemanager/build/
+apps/flutter_cpemanager/.flutter-plugins
+apps/flutter_cpemanager/.flutter-plugins-dependencies
