@@ -10,7 +10,9 @@
   - 更新 `pyproject.toml` 作者邮箱为 `2991077067@qq.com`。
   - 扩展 `.gitignore`，补 Flutter/Dart 生成文件忽略规则。
   - 将 GitHub Actions 桌面构建文件保存为 `docs/github-actions/desktop-build.yml` 模板；当前 OAuth token 缺少 `workflow` scope，不能直接推送 `.github/workflows/desktop-build.yml`。
-  - 计划首个提交描述：`chore: initialize cpemanager app project`。
+  - 初始化本地 git 仓库并连接远程：`https://github.com/yuan-666/cpemanager.git`。
+  - 已推送首个提交：`b2cb9e4 chore: initialize cpemanager app project`。
+  - 为记录 GitHub 同步状态，追加文档提交：`docs: record github sync status`。
 - 新增本项目的连续维护三件套：
   - `MODIFICATIONS.md`：记录每次重要修改和验证结果。
   - `PROJECT_MEMORY.md`：保存项目长期约定、架构记忆、环境要求和注意事项。

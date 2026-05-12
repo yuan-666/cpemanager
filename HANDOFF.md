@@ -22,6 +22,13 @@
 chore: initialize cpemanager app project
 ```
 
+GitHub 同步状态：
+
+- 远程仓库：`https://github.com/yuan-666/cpemanager.git`
+- 分支：`main`
+- 首个提交：`b2cb9e4 chore: initialize cpemanager app project`
+- 当前计划追加文档提交：`docs: record github sync status`
+
 ## 先读文件
 
 接手后建议按这个顺序阅读：
@@ -130,7 +137,7 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 - 没有做真实写操作测试，锁频/网络模式/天线切换可能影响设备网络，必须谨慎。
 - 当前机器未安装 `flutter` / `dart`，Flutter 骨架尚未本机构建验证。
 - HarmonyOS/OpenHarmony 不是 Flutter 官方主线支持目标，需要 OpenHarmony-SIG Flutter SDK 或 ArkTS 备选路线。
-- GitHub 仓库已由用户创建，仓库名与目录同名；本地需要推送到该远程仓库。
+- GitHub 仓库已由用户创建，仓库名与目录同名；`main` 已成功推送到该远程仓库。
 - 远程仓库 URL：`https://github.com/yuan-666/cpemanager.git`。
 - 2026-05-13 检查到 `gh auth status` 显示默认账号 token 已失效，但 `git push` 能使用已有凭据访问远程。
 - 当前 OAuth token 缺少 `workflow` scope，不能推送 `.github/workflows/*`；GitHub Actions 模板先放在 `docs/github-actions/desktop-build.yml`。

@@ -23,6 +23,8 @@
 - GitHub 仓库已由用户创建，仓库名与目录同名：`cpemanager`。
 - 本地提交身份应使用邮箱：`2991077067@qq.com`。
 - 远程仓库 URL：`https://github.com/yuan-666/cpemanager.git`。
+- `main` 已成功推送到 `origin/main`。
+- 首个提交：`b2cb9e4 chore: initialize cpemanager app project`。
 - 2026-05-13 检查到本机 `gh` 默认账号 `yuan-666` token 已失效；但 `git push` 可以通过已有凭据访问远程。
 - 当前 OAuth token 缺少 `workflow` scope，不能推送 `.github/workflows/*`。桌面构建 workflow 暂存为 `docs/github-actions/desktop-build.yml` 模板，重新授权后再复制到 `.github/workflows/desktop-build.yml`。
 - conda 环境名：`cpemanager`
