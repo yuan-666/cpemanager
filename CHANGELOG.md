@@ -6,6 +6,15 @@ All notable changes to this project are documented here.
 
 Mobile and workflow enablement release.
 
+### Release Assets
+
+- `CPEManager-android-v0.2.0-release.apk`
+- `CPEManager-android-v0.2.0-debug.apk`
+- `CPEManager-macos-arm64-v0.2.0-app.zip`
+- `CPEManager-web-v0.2.0.zip`
+- `cpemanager-0.2.0-py3-none-any.whl`
+- `SHA256SUMS.txt`
+
 ### Added
 
 - Generated Flutter native platform folders for Android, iOS, macOS, Windows, and web.
@@ -32,6 +41,7 @@ Mobile and workflow enablement release.
 ### Verified
 
 - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug`
+- `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release`
 - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test`
 - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze`
 - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web`
@@ -42,6 +52,7 @@ Mobile and workflow enablement release.
 
 - Android debug APK output: `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`.
 - Web/PWA output: `apps/flutter_cpemanager/build/web`.
+- Release assets are assembled under `dist/release/v0.2.0` and uploaded to GitHub Release `v0.2.0`; they are not committed to git.
 - No Android phone was connected during verification, so device install/launch remains to be checked on hardware.
 - iOS/macOS Flutter native builds still require full Xcode and CocoaPods on this Mac.
 - HarmonyOS/OpenHarmony remains a separate spike using the OpenHarmony-SIG Flutter SDK or an ArkTS fallback.

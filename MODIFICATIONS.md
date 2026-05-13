@@ -4,6 +4,18 @@
 
 ## 2026-05-13
 
+- 发布 `v0.2.0` GitHub Release：
+  - 重新构建 Android release APK：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
+  - 重新构建 Android debug APK、Web/PWA、Python wheel、macOS arm64 桌面 `.app`。
+  - 统一整理 release assets 到 `dist/release/v0.2.0/`：
+    - `CPEManager-android-v0.2.0-release.apk`
+    - `CPEManager-android-v0.2.0-debug.apk`
+    - `CPEManager-macos-arm64-v0.2.0-app.zip`
+    - `CPEManager-web-v0.2.0.zip`
+    - `cpemanager-0.2.0-py3-none-any.whl`
+    - `SHA256SUMS.txt`
+  - 新增发布说明：`docs/releases/v0.2.0.md`。
+  - 更新 `README.md`、`apps/flutter_cpemanager/README.md`、`CHANGELOG.md`、`docs/APP_PACKAGING_STRATEGY.md`，写明下载资产、安装方式、验证命令和 alpha 限制。
 - 完成移动端 Android 可运行目标：
   - 安装并验证 Flutter `3.41.9`、Dart `3.11.5`、OpenJDK 17、Android SDK 36、Build Tools 36.0.0、NDK 28.2.13676358、CMake 3.22.1。
   - 在 `apps/flutter_cpemanager` 生成 Android、iOS、macOS、Windows、web 原生平台目录。
@@ -27,6 +39,7 @@
   - 更新 `pyproject.toml`、`src/cpemanager/__init__.py`、`apps/flutter_cpemanager/pubspec.yaml`、Dart User-Agent、`README.md`、`CHANGELOG.md` 和打包策略文档。
 - 本轮验证结果：
   - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug` 通过。
+  - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release` 通过。
   - `aapt dump badging` 确认 APK 包名 `com.cpemanager.app`、版本 `0.2.0`、启动 Activity `com.cpemanager.app.MainActivity`。
   - `adb devices` 当前未发现已连接手机，因此尚未做真机安装启动验证。
   - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test` 通过。
@@ -35,6 +48,8 @@
   - `conda run -n cpemanager python -m unittest discover -s tests` 通过，10 个测试 OK。
   - `conda run -n cpemanager python -m compileall -q ...` 通过。
   - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.2.0`。
+  - `conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.2.0` 通过。
+  - `conda run -n cpemanager python tools/build_desktop.py --onedir` 通过。
 - 准备 GitHub 版本管理：
   - 新增 `CHANGELOG.md`，记录 `0.1.0` alpha 版本描述。
   - 更新 `README.md`，补版本、维护账号邮箱、项目内容、连续维护文档入口。

@@ -63,6 +63,7 @@ flutter pub get
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 ```
 
@@ -70,7 +71,16 @@ Verified Android output:
 
 ```text
 apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk
+apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk
 ```
+
+Release asset staging:
+
+```bash
+dist/release/v0.2.0/
+```
+
+The `v0.2.0` GitHub Release includes Android release/debug APKs, a macOS arm64 desktop `.app.zip`, a Web/PWA zip, the Python wheel, and `SHA256SUMS.txt`.
 
 Install to a USB-connected Android phone with developer mode and USB debugging enabled:
 

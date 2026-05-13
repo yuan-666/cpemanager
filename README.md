@@ -8,7 +8,33 @@ Huawei CPE management toolkit. The project has moved from separate proof-of-conc
 - Release state: alpha
 - Maintainer account email: `2991077067@qq.com`
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
+- Latest release notes: [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
 - Handoff docs: [HANDOFF.md](HANDOFF.md), [PROJECT_MEMORY.md](PROJECT_MEMORY.md), [MODIFICATIONS.md](MODIFICATIONS.md)
+
+## Latest Release Assets
+
+Release `v0.2.0` is published at [GitHub Releases](https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0).
+
+| Asset | Use |
+| --- | --- |
+| `CPEManager-android-v0.2.0-release.apk` | Recommended Android phone test package. |
+| `CPEManager-android-v0.2.0-debug.apk` | Debug Android package for troubleshooting. |
+| `CPEManager-macos-arm64-v0.2.0-app.zip` | macOS Apple Silicon desktop app bundle. |
+| `CPEManager-web-v0.2.0.zip` | Flutter Web/PWA static build. |
+| `cpemanager-0.2.0-py3-none-any.whl` | Python CLI and desktop wheel. |
+| `SHA256SUMS.txt` | Checksums for release assets. |
+
+Android alpha install:
+
+```bash
+adb install -r CPEManager-android-v0.2.0-release.apk
+```
+
+Python wheel install:
+
+```bash
+python -m pip install cpemanager-0.2.0-py3-none-any.whl
+```
 
 ## What Is Included
 
@@ -127,6 +153,12 @@ Current verified Android debug APK:
 apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk
 ```
 
+Current verified Android release APK:
+
+```text
+apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk
+```
+
 Install on an Android phone with USB debugging enabled:
 
 ```bash
@@ -144,6 +176,7 @@ cd apps/flutter_cpemanager
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 flutter build appbundle
 flutter build ios --no-codesign

@@ -30,6 +30,8 @@
 - `.github/workflows/desktop-build.yml` 已正式启用；`docs/github-actions/desktop-build.yml` 保留为模板副本。
 - `gh workflow list --repo yuan-666/cpemanager` 已确认 `Desktop Build` workflow 为 active。
 - 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`。
+- `v0.2.0` 发布说明文件：`docs/releases/v0.2.0.md`。
+- `v0.2.0` release assets 本地暂存在 `dist/release/v0.2.0/`，该目录被 git ignore，资产通过 GitHub Release 上传。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
 - 主要 Python 运行依赖：`requests`
@@ -150,6 +152,7 @@ Flutter 方向：
 - 代码在 `apps/flutter_cpemanager`。
 - Native 平台目录已经生成：Android、iOS、macOS、Windows、web。
 - Android debug APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`。
+- Android release APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
 - Web/PWA 已验证产出：`apps/flutter_cpemanager/build/web`。
 - Android 包名/namespace：`com.cpemanager.app`。
 - iOS bundle id：`com.cpemanager.app`；macOS bundle id：`com.cpemanager.app.macos`；Windows executable name：`CPEManager`；web manifest title：`CPE Manager`。
@@ -188,6 +191,7 @@ cd apps/flutter_cpemanager
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 ```
 

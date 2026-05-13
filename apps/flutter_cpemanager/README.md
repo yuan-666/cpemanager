@@ -5,7 +5,7 @@ This is the long-term cross-platform app track for Android, iOS, Windows, macOS,
 Current state:
 
 - Android, iOS, macOS, Windows, and web platform folders are generated.
-- Android debug APK builds successfully on the current Mac.
+- Android debug and release APKs build successfully on the current Mac.
 - The app includes a mobile connection form, status dashboard, NR neighbor panel, raw snapshot view, and guarded automatic-mode/unlock-all actions.
 - iOS/macOS native builds still require full Xcode and CocoaPods.
 
@@ -16,6 +16,7 @@ flutter pub get
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 ```
 
@@ -23,6 +24,7 @@ Android APK output:
 
 ```text
 build/app/outputs/flutter-apk/app-debug.apk
+build/app/outputs/flutter-apk/app-release.apk
 ```
 
 Web/PWA output:
@@ -30,5 +32,7 @@ Web/PWA output:
 ```text
 build/web
 ```
+
+GitHub Release `v0.2.0` uploads the packaged Android APKs, Web/PWA zip, macOS desktop zip, Python wheel, and checksums.
 
 HarmonyOS/OpenHarmony should be built with the OpenHarmony-SIG Flutter SDK rather than upstream Flutter stable.

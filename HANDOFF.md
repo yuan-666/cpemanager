@@ -29,6 +29,7 @@ GitHub 同步状态：
 - 首个提交：`b2cb9e4 chore: initialize cpemanager app project`
 - 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`
 - GitHub Actions：`Desktop Build` workflow 已 active。
+- 发布说明：`docs/releases/v0.2.0.md`
 
 ## 先读文件
 
@@ -103,7 +104,7 @@ python tools/build_desktop.py --onedir
 
 - `dist/desktop/CPEManager.app`
 - `dist/desktop/CPEManager/CPEManager`
-- `dist/cpemanager-0.1.0-py3-none-any.whl` 是上一个本地 wheel；版本已推进到 `0.2.0`，如需发布 Python 包请重新构建 wheel。
+- `dist/release/v0.2.0/cpemanager-0.2.0-py3-none-any.whl`
 
 移动端 Android：
 
@@ -116,6 +117,16 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 当前 Android APK：
 
 - `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`
+- `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`
+
+Release assets staging:
+
+- `dist/release/v0.2.0/CPEManager-android-v0.2.0-release.apk`
+- `dist/release/v0.2.0/CPEManager-android-v0.2.0-debug.apk`
+- `dist/release/v0.2.0/CPEManager-macos-arm64-v0.2.0-app.zip`
+- `dist/release/v0.2.0/CPEManager-web-v0.2.0.zip`
+- `dist/release/v0.2.0/cpemanager-0.2.0-py3-none-any.whl`
+- `dist/release/v0.2.0/SHA256SUMS.txt`
 
 Web/PWA：
 
@@ -134,10 +145,13 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 
 ```bash
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 conda run -n cpemanager python -m unittest discover -s tests
+conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.2.0
+conda run -n cpemanager python tools/build_desktop.py --onedir
 conda run -n cpemanager cpemanager-desktop --version
 ```
 
