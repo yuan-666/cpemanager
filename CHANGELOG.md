@@ -2,9 +2,18 @@
 
 All notable changes to this project are documented here.
 
-## Unreleased - 2026-05-13
+## 0.3.0 - 2026-05-13
 
-Mobile dashboard and Fiberhome device-adapter iteration.
+Mobile dashboard and Fiberhome device-adapter release.
+
+### Release Assets
+
+- `CPEManager-android-v0.3.0-release.apk`
+- `CPEManager-android-v0.3.0-debug.apk`
+- `CPEManager-macos-arm64-v0.3.0-app.zip`
+- `CPEManager-web-v0.3.0.zip`
+- `cpemanager-0.3.0-py3-none-any.whl`
+- `SHA256SUMS.txt`
 
 ### Added
 
@@ -22,7 +31,7 @@ Mobile dashboard and Fiberhome device-adapter iteration.
 
 ### Changed
 
-- Bumped the Flutter app package version to `0.3.0+3`; the Python package remains at the published `0.2.0` release until the next full release bundle is cut.
+- Bumped the Flutter app package version to `0.3.0+3` and Python package version to `0.3.0`.
 - Hardened the Dart Huawei and Fiberhome clients so host input can include or omit `http://`.
 - Ignored raw `.har` captures because they can contain live `sessionid` values and device identifiers.
 
@@ -38,7 +47,7 @@ Mobile dashboard and Fiberhome device-adapter iteration.
 ### Notes
 
 - The current Fiberhome HAR set only covers configuration operations through `FHTOOLAPIS`; it does not include the session acquisition/login flow, live RF signal, traffic, device info, or neighbor-cell status endpoints.
-- The rebuilt Android APKs are local artifacts at `apps/flutter_cpemanager/build/app/outputs/flutter-apk/` and are not yet uploaded as a new GitHub Release.
+- Release assets are assembled under `dist/release/v0.3.0` and uploaded to GitHub Release `v0.3.0`; they are not committed to git.
 
 ## 0.2.0 - 2026-05-13
 

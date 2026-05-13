@@ -37,9 +37,9 @@ Web/PWA output:
 build/web
 ```
 
-GitHub Release `v0.2.0` uploads the packaged Android APKs, Web/PWA zip, macOS desktop zip, Python wheel, and checksums.
+GitHub Release `v0.3.0` uploads the packaged Android APKs, Web/PWA zip, macOS desktop zip, Python wheel, and checksums.
 
-The current local APKs are rebuilt from the unreleased `0.3.0+3` Flutter app state:
+The current local APKs are rebuilt from the `0.3.0+3` Flutter app state:
 
 ```text
 build/app/outputs/flutter-apk/app-debug.apk

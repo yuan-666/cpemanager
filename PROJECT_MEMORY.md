@@ -34,7 +34,10 @@
 - `v0.2.0` release assets 本地暂存在 `dist/release/v0.2.0/`，该目录被 git ignore，资产通过 GitHub Release 上传。
 - `v0.2.0` GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`。
 - 2026-05-13 已确认 release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
-- 当前 Flutter App 开发版本：`0.3.0+3`，尚未切新的 GitHub Release。
+- `v0.3.0` 发布说明文件：`docs/releases/v0.3.0.md`。
+- `v0.3.0` release assets 本地暂存在 `dist/release/v0.3.0/`，该目录被 git ignore，资产通过 GitHub Release 上传。
+- `v0.3.0` GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.0`。
+- 当前 Flutter App 版本：`0.3.0+3`。
 - 本地 HAR 抓包目录 `烽火/` 不要提交；HAR 内含 `sessionid`，`.gitignore` 已忽略 `*.har`。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
@@ -180,7 +183,7 @@ Flutter 方向：
 - Android debug APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`。
 - Android release APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
 - Web/PWA 已验证产出：`apps/flutter_cpemanager/build/web`。
-- 当前本地 APK 已由 Flutter app `0.3.0+3` 重新构建；`v0.2.0` GitHub Release 资产仍是上一版发布包。
+- 当前本地 APK 已由 Flutter app `0.3.0+3` 重新构建；`v0.3.0` GitHub Release 使用同一版本线整理资产。
 - Android 包名/namespace：`com.cpemanager.app`。
 - iOS bundle id：`com.cpemanager.app`；macOS bundle id：`com.cpemanager.app.macos`；Windows executable name：`CPEManager`；web manifest title：`CPE Manager`。
 - Android 允许明文 HTTP 访问 `192.168.8.1`；iOS 已配置局域网说明和 HTTP 放行；macOS 已配置 network client entitlement。

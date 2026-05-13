@@ -4,37 +4,37 @@ Huawei CPE management toolkit, now expanding into a multi-vendor CPE app. The pr
 
 ## Version
 
-- Current published version: `0.2.0`
-- Current Flutter app development version: `0.3.0+3`
+- Current published version: `0.3.0`
+- Current Flutter app version: `0.3.0+3`
 - Release state: alpha
 - Maintainer account email: `2991077067@qq.com`
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
-- Latest release notes: [docs/releases/v0.2.0.md](docs/releases/v0.2.0.md)
+- Latest release notes: [docs/releases/v0.3.0.md](docs/releases/v0.3.0.md)
 - Handoff docs: [HANDOFF.md](HANDOFF.md), [PROJECT_MEMORY.md](PROJECT_MEMORY.md), [MODIFICATIONS.md](MODIFICATIONS.md)
 
 ## Latest Release Assets
 
-Release `v0.2.0` is published at [GitHub Releases](https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0).
+Release `v0.3.0` is published at [GitHub Releases](https://github.com/yuan-666/cpemanager/releases/tag/v0.3.0).
 
 | Asset | Use |
 | --- | --- |
-| `CPEManager-android-v0.2.0-release.apk` | Recommended Android phone test package. |
-| `CPEManager-android-v0.2.0-debug.apk` | Debug Android package for troubleshooting. |
-| `CPEManager-macos-arm64-v0.2.0-app.zip` | macOS Apple Silicon desktop app bundle. |
-| `CPEManager-web-v0.2.0.zip` | Flutter Web/PWA static build. |
-| `cpemanager-0.2.0-py3-none-any.whl` | Python CLI and desktop wheel. |
+| `CPEManager-android-v0.3.0-release.apk` | Recommended Android phone test package. |
+| `CPEManager-android-v0.3.0-debug.apk` | Debug Android package for troubleshooting. |
+| `CPEManager-macos-arm64-v0.3.0-app.zip` | macOS Apple Silicon desktop app bundle. |
+| `CPEManager-web-v0.3.0.zip` | Flutter Web/PWA static build. |
+| `cpemanager-0.3.0-py3-none-any.whl` | Python CLI and desktop wheel. |
 | `SHA256SUMS.txt` | Checksums for release assets. |
 
 Android alpha install:
 
 ```bash
-adb install -r CPEManager-android-v0.2.0-release.apk
+adb install -r CPEManager-android-v0.3.0-release.apk
 ```
 
 Python wheel install:
 
 ```bash
-python -m pip install cpemanager-0.2.0-py3-none-any.whl
+python -m pip install cpemanager-0.3.0-py3-none-any.whl
 ```
 
 ## What Is Included

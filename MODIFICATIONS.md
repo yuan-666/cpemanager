@@ -11,12 +11,25 @@
   - 已接入烽火方法：`app_get_network_info`、`app_set_network_info`、`app_get_lockband`、`app_set_lockband`、`app_get_cell_list`、`app_set_cell_list`。
   - 烽火操作面板支持 Auto/LTE/SA/NSA、锁 Band、NR 锁小区、4G+5G 同锁小区、清空锁小区列表，并写完读回当前状态。
   - 新增 `apps/flutter_cpemanager/lib/domain/cell_math.dart`：TAC 十进制、LTE ECI、NR GCI、ECI/GCI 拆分。
-  - Flutter app 版本推进到 `0.3.0+3`；Python 包仍保持已发布的 `0.2.0`。
+  - Flutter app 版本推进到 `0.3.0+3`；Python 包版本推进到 `0.3.0`。
   - 更新 `README.md`、`apps/flutter_cpemanager/README.md`、`CHANGELOG.md`、`docs/API_REFERENCE.md`、`docs/APP_PACKAGING_STRATEGY.md`。
   - `.gitignore` 新增 `*.har`，避免把包含 `sessionid` 的本地抓包传到 GitHub。
   - 验证通过：`flutter test`、`flutter analyze`、`flutter build apk --debug`、`flutter build apk --release`、`flutter build web`、`conda run -n cpemanager python -m unittest discover -s tests`。
   - 新版本地 APK：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk` 和 `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
   - 限制：烽火 HAR 目前没有登录/session 获取、实时信号、流量、设备信息和邻区状态接口，所以当前烽火模式先覆盖配置操作和锁定状态读回。
+- 发布 `v0.3.0` GitHub Release：
+  - 新增发布说明：`docs/releases/v0.3.0.md`。
+  - 统一整理 release assets 到 `dist/release/v0.3.0/`：
+    - `CPEManager-android-v0.3.0-release.apk`
+    - `CPEManager-android-v0.3.0-debug.apk`
+    - `CPEManager-macos-arm64-v0.3.0-app.zip`
+    - `CPEManager-web-v0.3.0.zip`
+    - `cpemanager-0.3.0-py3-none-any.whl`
+    - `SHA256SUMS.txt`
+  - `aapt dump badging` 确认 release APK：包名 `com.cpemanager.app`、版本 `0.3.0`、versionCode `3`。
+  - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.3.0`。
+  - `conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.3.0` 通过。
+  - `conda run -n cpemanager python tools/build_desktop.py --onedir` 通过。
 - 发布 `v0.2.0` GitHub Release：
   - 重新构建 Android release APK：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
   - 重新构建 Android debug APK、Web/PWA、Python wheel、macOS arm64 桌面 `.app`。

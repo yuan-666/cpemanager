@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cpemanager"
-version = "0.2.0"
-description = "Command-line Huawei CPE management toolkit"
+version = "0.3.0"
+description = "Cross-platform CPE management toolkit"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

@@ -15,7 +15,7 @@
 - Flutter App 已加入 Huawei/Fiberhome(烽火) 设备选择；烽火当前是基于 HAR 的配置操作 alpha 适配
 - API/打包文档和基础测试
 
-当前发布版本：`0.2.0`
+当前发布版本：`0.3.0`
 
 当前 Flutter App 开发版本：`0.3.0+3`
 
@@ -31,11 +31,12 @@ GitHub 同步状态：
 - 分支：`main`
 - 首个提交：`b2cb9e4 chore: initialize cpemanager app project`
 - 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`
+- 本轮烽火看板提交：`70b42b6 feat: add fiberhome mobile dashboard`
 - GitHub Actions：`Desktop Build` workflow 已 active。
-- 发布说明：`docs/releases/v0.2.0.md`
-- GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`
+- 发布说明：`docs/releases/v0.3.0.md`
+- GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.0`
 - Release assets 已确认全部上传完成。
-- 这轮 Flutter/Fiberhome 改动尚未创建新的 GitHub Release；本地 APK 已重新构建。
+- 本轮 Flutter/Fiberhome 改动已整理为 `v0.3.0` GitHub Release；本地 APK 已重新构建。
 
 ## 先读文件
 
@@ -112,7 +113,7 @@ python tools/build_desktop.py --onedir
 
 - `dist/desktop/CPEManager.app`
 - `dist/desktop/CPEManager/CPEManager`
-- `dist/release/v0.2.0/cpemanager-0.2.0-py3-none-any.whl`
+- `dist/release/v0.3.0/cpemanager-0.3.0-py3-none-any.whl`
 
 移动端 Android：
 
@@ -130,12 +131,12 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
 Release assets staging:
 
-- `dist/release/v0.2.0/CPEManager-android-v0.2.0-release.apk`
-- `dist/release/v0.2.0/CPEManager-android-v0.2.0-debug.apk`
-- `dist/release/v0.2.0/CPEManager-macos-arm64-v0.2.0-app.zip`
-- `dist/release/v0.2.0/CPEManager-web-v0.2.0.zip`
-- `dist/release/v0.2.0/cpemanager-0.2.0-py3-none-any.whl`
-- `dist/release/v0.2.0/SHA256SUMS.txt`
+- `dist/release/v0.3.0/CPEManager-android-v0.3.0-release.apk`
+- `dist/release/v0.3.0/CPEManager-android-v0.3.0-debug.apk`
+- `dist/release/v0.3.0/CPEManager-macos-arm64-v0.3.0-app.zip`
+- `dist/release/v0.3.0/CPEManager-web-v0.3.0.zip`
+- `dist/release/v0.3.0/cpemanager-0.3.0-py3-none-any.whl`
+- `dist/release/v0.3.0/SHA256SUMS.txt`
 
 Web/PWA：
 
@@ -159,7 +160,7 @@ JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
 JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 conda run -n cpemanager python -m unittest discover -s tests
-conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.2.0
+conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.3.0
 conda run -n cpemanager python tools/build_desktop.py --onedir
 conda run -n cpemanager cpemanager-desktop --version
 ```
@@ -169,7 +170,7 @@ conda run -n cpemanager cpemanager-desktop --version
 ```text
 Ran 10 tests in 0.001s
 OK
-CPE Manager 0.2.0
+CPE Manager 0.3.0
 ```
 
 本轮 Flutter/Fiberhome 验证额外确认：
