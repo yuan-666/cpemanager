@@ -9,7 +9,9 @@ class FiberhomeClient {
     required this.password,
     String sessionId = '',
     this.timeout = const Duration(seconds: 10),
-  }) : _sessionId = sessionId;
+  }) : _sessionId = sessionId {
+    _http.findProxy = (_) => 'DIRECT';
+  }
 
   final String host;
   final String username;
@@ -97,6 +99,7 @@ class FiberhomeClient {
     Object? dataObj,
   }) async {
     await _ensureLoggedIn();
+    _sessionId = await refreshSessionId();
     return _post(ajaxMethod, dataObj: dataObj);
   }
 
@@ -112,13 +115,15 @@ class FiberhomeClient {
       throw StateError('烽火设备需要管理密码。');
     }
     final request = await _http.postUrl(_toolUri).timeout(timeout);
-    request.headers.contentType = ContentType.json;
+    request.headers.set(HttpHeaders.contentTypeHeader, 'application/json');
     _applyHeaders(request);
-    request.write(jsonEncode(<String, Object?>{
-      'dataObj': dataObj,
-      'ajaxmethod': ajaxMethod,
-      'sessionid': _sessionId.trim(),
-    }));
+    final payload = encodeToolPayload(
+      ajaxMethod: ajaxMethod,
+      sessionId: _sessionId.trim(),
+      dataObj: dataObj,
+    );
+    request.contentLength = payload.length;
+    request.add(payload);
     final response = await request.close().timeout(timeout);
     final text = await response.transform(utf8.decoder).join();
     _raiseForStatus(response, text);
@@ -217,12 +222,24 @@ class FiberhomeClient {
     );
   }
 
+  static List<int> encodeToolPayload({
+    required String ajaxMethod,
+    required String sessionId,
+    Object? dataObj,
+  }) {
+    return utf8.encode(jsonEncode(<String, Object?>{
+      'dataObj': dataObj,
+      'ajaxmethod': ajaxMethod,
+      'sessionid': sessionId,
+    }));
+  }
+
   void _applyHeaders(HttpClientRequest request) {
     request.headers
         .set('Accept', 'application/json, text/javascript, */*; q=0.01');
     request.headers.set('Origin', 'http://$_normalizedHost');
     request.headers.set('Referer', 'http://$_normalizedHost/main.html');
-    request.headers.set('User-Agent', 'Mozilla/5.0 CPEManager/0.3.1');
+    request.headers.set('User-Agent', 'Mozilla/5.0 CPEManager/0.3.2');
     request.headers.set('X-Requested-With', 'XMLHttpRequest');
     request.headers.set('Accept-Language', 'zh-CN,en,*');
   }

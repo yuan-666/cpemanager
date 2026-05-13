@@ -12,7 +12,9 @@ class CpeClient {
     this.username = 'admin',
     required this.password,
     this.timeout = const Duration(seconds: 10),
-  });
+  }) {
+    _http.findProxy = (_) => 'DIRECT';
+  }
 
   final String host;
   final String username;
@@ -57,7 +59,9 @@ class CpeClient {
     if (_requestToken.isNotEmpty) {
       request.headers.set('__RequestVerificationToken', _requestToken);
     }
-    request.write(body);
+    final payload = utf8.encode(body);
+    request.contentLength = payload.length;
+    request.add(payload);
     final response = await request.close().timeout(timeout);
     _captureCookies(response);
     final text = await response.transform(utf8.decoder).join();
@@ -395,7 +399,7 @@ class CpeClient {
   }
 
   void _applyHeaders(HttpClientRequest request) {
-    request.headers.set('User-Agent', 'CPEManager/0.3.1');
+    request.headers.set('User-Agent', 'CPEManager/0.3.2');
     request.headers.set('X-Requested-With', 'XMLHttpRequest');
     request.headers.set('Cache-Control', 'no-cache');
     request.headers.set('Pragma', 'no-cache');

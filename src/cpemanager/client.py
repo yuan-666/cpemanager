@@ -66,6 +66,8 @@ class HuaweiCPE:
         self.timeout = timeout
         self.logged_in = False
         self.session = requests.Session()
+        # Local CPE addresses must bypass desktop HTTP proxy environment vars.
+        self.session.trust_env = False
         self.session.headers.update(
             {
                 "User-Agent": (

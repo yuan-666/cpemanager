@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -18,6 +19,53 @@ enum CpeVendor {
 
   final String code;
   final String label;
+}
+
+enum DisplayMode {
+  simple('简洁', '翻译字段'),
+  professional('专业', '源参数');
+
+  const DisplayMode(this.label, this.description);
+
+  final String label;
+  final String description;
+}
+
+class CpeDeviceProfile {
+  const CpeDeviceProfile({
+    required this.vendor,
+    required this.title,
+    required this.protocol,
+    required this.description,
+    required this.icon,
+  });
+
+  final CpeVendor vendor;
+  final String title;
+  final String protocol;
+  final String description;
+  final IconData icon;
+}
+
+const cpeDeviceProfiles = <CpeDeviceProfile>[
+  CpeDeviceProfile(
+    vendor: CpeVendor.huawei,
+    title: '华为 CPE',
+    protocol: 'Huawei XML API',
+    description: '适用于华为/智选类 CPE，使用 challenge_login 和 XML 状态接口。',
+    icon: Icons.router_outlined,
+  ),
+  CpeDeviceProfile(
+    vendor: CpeVendor.fiberhome,
+    title: '烽火 CPE',
+    protocol: 'FHNCAPIS / FHTOOLAPIS',
+    description: '适用于烽火 LG61xx 系列，使用 JSON 接口读取信号、SIM 与锁定状态。',
+    icon: Icons.hub_outlined,
+  ),
+];
+
+CpeDeviceProfile cpeProfile(CpeVendor vendor) {
+  return cpeDeviceProfiles.firstWhere((item) => item.vendor == vendor);
 }
 
 class CpeManagerApp extends StatelessWidget {
@@ -75,18 +123,37 @@ class _HomeScreenState extends State<HomeScreen> {
   final lockPciController = TextEditingController();
   final lteLockArfcnController = TextEditingController();
   final lteLockPciController = TextEditingController();
+  final scrollController = ScrollController();
 
   CpeVendor vendor = CpeVendor.huawei;
+  DisplayMode displayMode = DisplayMode.simple;
   int tabIndex = 1;
   Map<String, dynamic>? snapshot;
   Map<String, List<Map<String, String>>>? neighbors;
   String rawOutput = '';
   String? error;
   bool busy = false;
+  bool autoRefresh = true;
+  bool backgroundRefresh = false;
   String busyLabel = '';
+  DateTime? lastUpdated;
+  Timer? refreshTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    refreshTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted || !autoRefresh || snapshot == null || busy) {
+        return;
+      }
+      unawaited(refreshSnapshot(silent: true));
+    });
+  }
 
   @override
   void dispose() {
+    refreshTimer?.cancel();
+    scrollController.dispose();
     hostController.dispose();
     usernameController.dispose();
     passwordController.dispose();
@@ -125,7 +192,11 @@ class _HomeScreenState extends State<HomeScreen> {
         : hostController.text.trim();
   }
 
-  Future<void> runTask(String label, Future<void> Function() task) async {
+  Future<void> runTask(
+    String label,
+    Future<void> Function() task, {
+    bool silent = false,
+  }) async {
     if (passwordController.text.isEmpty) {
       setState(() {
         error =
@@ -133,19 +204,23 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       return;
     }
-    setState(() {
-      busy = true;
-      busyLabel = label;
-      error = null;
-    });
+    if (!silent) {
+      setState(() {
+        busy = true;
+        busyLabel = label;
+        error = null;
+      });
+    }
     try {
       await task();
     } catch (exception) {
-      setState(() {
-        error = exception.toString();
-      });
-    } finally {
       if (mounted) {
+        setState(() {
+          error = exception.toString();
+        });
+      }
+    } finally {
+      if (mounted && !silent) {
         setState(() {
           busy = false;
           busyLabel = '';
@@ -154,27 +229,47 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> refreshSnapshot() {
-    return runTask('读取设备状态', () async {
-      if (vendor == CpeVendor.huawei) {
-        final cpe = huaweiClient();
-        final next = await cpe.snapshot();
-        final nextNeighbors = await cpe.neighborCells();
-        setState(() {
-          snapshot = next;
-          neighbors = nextNeighbors;
-          rawOutput = const JsonEncoder.withIndent('  ').convert(next);
-        });
-      } else {
-        final cpe = fiberhomeClient();
-        final next = await cpe.snapshot();
-        setState(() {
-          snapshot = next;
-          neighbors = fiberhomeNeighbors(next);
-          rawOutput = const JsonEncoder.withIndent('  ').convert(next);
-        });
+  Future<void> refreshSnapshot({bool silent = false}) async {
+    if (silent && backgroundRefresh) {
+      return;
+    }
+    if (silent) {
+      backgroundRefresh = true;
+    }
+    try {
+      await runTask('读取设备状态', () async {
+        if (vendor == CpeVendor.huawei) {
+          final cpe = huaweiClient();
+          final next = await cpe.snapshot();
+          final nextNeighbors = await cpe.neighborCells();
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            snapshot = next;
+            neighbors = nextNeighbors;
+            rawOutput = const JsonEncoder.withIndent('  ').convert(next);
+            lastUpdated = DateTime.now();
+          });
+        } else {
+          final cpe = fiberhomeClient();
+          final next = await cpe.snapshot();
+          if (!mounted) {
+            return;
+          }
+          setState(() {
+            snapshot = next;
+            neighbors = fiberhomeNeighbors(next);
+            rawOutput = const JsonEncoder.withIndent('  ').convert(next);
+            lastUpdated = DateTime.now();
+          });
+        }
+      }, silent: silent);
+    } finally {
+      if (silent) {
+        backgroundRefresh = false;
       }
-    });
+    }
   }
 
   Future<void> setAutoMode() async {
@@ -329,12 +424,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final model = DashboardModel.from(
       vendor: vendor,
+      displayMode: displayMode,
       snapshot: snapshot,
       neighbors: neighbors,
     );
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
+          controller: scrollController,
           slivers: [
             SliverToBoxAdapter(
               child: Padding(
@@ -344,7 +441,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   vendor: vendor,
                   busy: busy,
                   busyLabel: busyLabel,
-                  onRefresh: refreshSnapshot,
+                  autoRefresh: autoRefresh,
+                  lastUpdated: lastUpdated,
+                  displayMode: displayMode,
+                  onRefresh: () => refreshSnapshot(),
+                  onAutoRefreshChanged: (value) {
+                    setState(() {
+                      autoRefresh = value;
+                    });
+                  },
+                  onDisplayModeChanged: (next) {
+                    setState(() {
+                      displayMode = next;
+                    });
+                  },
                   onVendorChanged: (next) {
                     setState(() {
                       vendor = next;
@@ -352,7 +462,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       neighbors = null;
                       rawOutput = '';
                       error = null;
+                      lastUpdated = null;
                     });
+                    if (scrollController.hasClients) {
+                      scrollController.jumpTo(0);
+                    }
                   },
                 ),
               ),
@@ -375,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         hostController: hostController,
                         usernameController: usernameController,
                         passwordController: passwordController,
-                        onRead: busy ? null : refreshSnapshot,
+                        onRead: busy ? null : () => refreshSnapshot(),
                       ),
                       PccWorkspace(model: model),
                       CarrierWorkspace(model: model),
@@ -411,6 +525,9 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             tabIndex = index;
           });
+          if (scrollController.hasClients) {
+            scrollController.jumpTo(0);
+          }
         },
         backgroundColor: CpeColors.panel,
         indicatorColor: CpeColors.tileAccent,
@@ -452,7 +569,12 @@ class HeaderPanel extends StatelessWidget {
     required this.vendor,
     required this.busy,
     required this.busyLabel,
+    required this.autoRefresh,
+    required this.lastUpdated,
+    required this.displayMode,
     required this.onRefresh,
+    required this.onAutoRefreshChanged,
+    required this.onDisplayModeChanged,
     required this.onVendorChanged,
     super.key,
   });
@@ -461,7 +583,12 @@ class HeaderPanel extends StatelessWidget {
   final CpeVendor vendor;
   final bool busy;
   final String busyLabel;
+  final bool autoRefresh;
+  final DateTime? lastUpdated;
+  final DisplayMode displayMode;
   final VoidCallback onRefresh;
+  final ValueChanged<bool> onAutoRefreshChanged;
+  final ValueChanged<DisplayMode> onDisplayModeChanged;
   final ValueChanged<CpeVendor> onVendorChanged;
 
   @override
@@ -497,31 +624,25 @@ class HeaderPanel extends StatelessWidget {
                   ],
                 ),
               ),
-              TextButton.icon(
+              IconButton.filledTonal(
+                tooltip: busy ? busyLabel : '立即刷新',
                 onPressed: busy ? null : onRefresh,
                 icon: const Icon(Icons.refresh),
-                label: Text(busy ? busyLabel : '刷新'),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          SegmentedButton<CpeVendor>(
-            segments: CpeVendor.values
-                .map(
-                  (item) => ButtonSegment<CpeVendor>(
-                    value: item,
-                    label: Text(item.label),
-                    icon: Icon(
-                      item == CpeVendor.huawei
-                          ? Icons.router_outlined
-                          : Icons.hub_outlined,
-                    ),
-                  ),
-                )
-                .toList(),
-            selected: <CpeVendor>{vendor},
-            onSelectionChanged: (value) => onVendorChanged(value.first),
-            showSelectedIcon: false,
+          const SizedBox(height: 12),
+          DeviceProfileSelector(
+            vendor: vendor,
+            onChanged: onVendorChanged,
+          ),
+          const SizedBox(height: 12),
+          HeaderControls(
+            autoRefresh: autoRefresh,
+            lastUpdated: lastUpdated,
+            displayMode: displayMode,
+            onAutoRefreshChanged: onAutoRefreshChanged,
+            onDisplayModeChanged: onDisplayModeChanged,
           ),
           const SizedBox(height: 12),
           Wrap(
@@ -545,6 +666,113 @@ class HeaderPanel extends StatelessWidget {
   }
 }
 
+class DeviceProfileSelector extends StatelessWidget {
+  const DeviceProfileSelector({
+    required this.vendor,
+    required this.onChanged,
+    super.key,
+  });
+
+  final CpeVendor vendor;
+  final ValueChanged<CpeVendor> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<CpeVendor>(
+      initialValue: vendor,
+      isExpanded: true,
+      decoration: const InputDecoration(
+        labelText: '设备档案',
+        prefixIcon: Icon(Icons.router_outlined),
+      ),
+      items: CpeVendor.values.map((item) {
+        final profile = cpeProfile(item);
+        return DropdownMenuItem<CpeVendor>(
+          value: item,
+          child: Row(
+            children: [
+              Icon(profile.icon, size: 20, color: CpeColors.primary),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '${profile.title} · ${profile.protocol}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: CpeColors.ink,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
+      },
+    );
+  }
+}
+
+class HeaderControls extends StatelessWidget {
+  const HeaderControls({
+    required this.autoRefresh,
+    required this.lastUpdated,
+    required this.displayMode,
+    required this.onAutoRefreshChanged,
+    required this.onDisplayModeChanged,
+    super.key,
+  });
+
+  final bool autoRefresh;
+  final DateTime? lastUpdated;
+  final DisplayMode displayMode;
+  final ValueChanged<bool> onAutoRefreshChanged;
+  final ValueChanged<DisplayMode> onDisplayModeChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        FilterChip(
+          selected: autoRefresh,
+          onSelected: onAutoRefreshChanged,
+          avatar: Icon(
+            autoRefresh ? Icons.sync : Icons.sync_disabled,
+            size: 18,
+          ),
+          label: Text(autoRefresh ? '5秒自动刷新' : '手动刷新'),
+        ),
+        StatusChip(label: '更新 ${timeText(lastUpdated)}'),
+        SegmentedButton<DisplayMode>(
+          segments: DisplayMode.values
+              .map(
+                (item) => ButtonSegment<DisplayMode>(
+                  value: item,
+                  label: Text(item.label),
+                  icon: Icon(
+                    item == DisplayMode.simple
+                        ? Icons.translate
+                        : Icons.data_object,
+                  ),
+                ),
+              )
+              .toList(),
+          selected: <DisplayMode>{displayMode},
+          showSelectedIcon: false,
+          onSelectionChanged: (value) => onDisplayModeChanged(value.first),
+        ),
+      ],
+    );
+  }
+}
+
 class LoginWorkspace extends StatelessWidget {
   const LoginWorkspace({
     required this.vendor,
@@ -564,17 +792,20 @@ class LoginWorkspace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isHuawei = vendor == CpeVendor.huawei;
+    final profile = cpeProfile(vendor);
     return Column(
       children: [
         Surface(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SectionTitle(title: '设备登录'),
+              const SectionTitle(title: '连接设备'),
+              const SizedBox(height: 12),
+              DeviceProfileCard(profile: profile),
               const SizedBox(height: 12),
               FieldBlock(
                 label: 'CPE 地址',
-                helper: '默认 192.168.8.1',
+                helper: '局域网后台地址，默认 192.168.8.1',
                 child: TextField(
                   controller: hostController,
                   keyboardType: TextInputType.url,
@@ -584,7 +815,7 @@ class LoginWorkspace extends StatelessWidget {
               const SizedBox(height: 12),
               FieldBlock(
                 label: '用户名',
-                helper: isHuawei ? '华为默认 admin' : '烽火默认 admin',
+                helper: '默认账号通常为 admin',
                 child: TextField(
                   controller: usernameController,
                   decoration: const InputDecoration(hintText: 'admin'),
@@ -593,9 +824,7 @@ class LoginWorkspace extends StatelessWidget {
               const SizedBox(height: 12),
               FieldBlock(
                 label: '管理密码',
-                helper: isHuawei
-                    ? '使用 SesTokInfo + challenge_login / authentication_login'
-                    : '使用 get_refresh_sessionid + app_do_login 自动登录',
+                helper: isHuawei ? '用于读取华为状态接口' : '用于读取烽火状态接口',
                 child: TextField(
                   controller: passwordController,
                   obscureText: true,
@@ -618,12 +847,70 @@ class LoginWorkspace extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         InfoStrip(
-          title: isHuawei ? 'Huawei 模式' : 'Fiberhome 模式',
-          body: isHuawei
-              ? '优先使用 SesTokInfo token 队列登录，并读取 signal、PLMN、流量、邻区。'
-              : '使用 FHNCAPIS 获取 sessionid，再调用 app_do_login 和 app_get_base_info 读取信号/流量/设备状态。',
+          title: '当前设备档案',
+          body:
+              '${profile.title} · ${profile.protocol}。后续新增设备时会继续放进这个档案选择器，不需要改变登录流程。',
         ),
       ],
+    );
+  }
+}
+
+class DeviceProfileCard extends StatelessWidget {
+  const DeviceProfileCard({required this.profile, super.key});
+
+  final CpeDeviceProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: CpeColors.tile,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: CpeColors.border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: CpeColors.tileAccent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(profile.icon, color: CpeColors.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile.title,
+                  style: const TextStyle(
+                    color: CpeColors.ink,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  profile.description,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: CpeColors.muted,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -646,13 +933,24 @@ class PccWorkspace extends StatelessWidget {
               SignalQualityPanel(model: model),
               const SizedBox(height: 12),
               PowerPanel(model: model),
+              const SizedBox(height: 12),
+              SimInfoPanel(model: model),
             ] else
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(flex: 3, child: SignalQualityPanel(model: model)),
                   const SizedBox(width: 12),
-                  Expanded(flex: 2, child: PowerPanel(model: model)),
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        PowerPanel(model: model),
+                        const SizedBox(height: 12),
+                        SimInfoPanel(model: model),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             const SizedBox(height: 12),
@@ -987,6 +1285,27 @@ class SignalQualityPanel extends StatelessWidget {
             MetricBar(item: item),
             const SizedBox(height: 10),
           ],
+          DenseKvGrid(items: model.modulationItems, compact: true),
+        ],
+      ),
+    );
+  }
+}
+
+class SimInfoPanel extends StatelessWidget {
+  const SimInfoPanel({required this.model, super.key});
+
+  final DashboardModel model;
+
+  @override
+  Widget build(BuildContext context) {
+    return Surface(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionTitle(title: 'SIM 信息'),
+          const SizedBox(height: 12),
+          DenseKvGrid(items: model.simItems, compact: true),
         ],
       ),
     );
@@ -1167,7 +1486,7 @@ class DenseKvGrid extends StatelessWidget {
             crossAxisCount: columns,
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
-            childAspectRatio: compact ? 2.45 : 1.75,
+            mainAxisExtent: compact ? 86 : 98,
           ),
           itemBuilder: (context, index) => KvTile(item: items[index]),
         );
@@ -1192,27 +1511,34 @@ class KvTile extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             item.label,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               color: CpeColors.muted,
               fontWeight: FontWeight.w700,
+              fontSize: 12.5,
+              height: 1.15,
             ),
           ),
-          const SizedBox(height: 5),
-          Text(
-            item.value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: CpeColors.ink,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-              height: 1.15,
+          const Spacer(),
+          SizedBox(
+            width: double.infinity,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                item.value,
+                maxLines: 1,
+                style: const TextStyle(
+                  color: CpeColors.ink,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                  height: 1.08,
+                ),
+              ),
             ),
           ),
         ],
@@ -1714,7 +2040,9 @@ class DashboardModel {
     required this.primaryItems,
     required this.identityItems,
     required this.signalBars,
+    required this.modulationItems,
     required this.powerItems,
+    required this.simItems,
     required this.downlinkItems,
     required this.uplinkItems,
     required this.trafficItems,
@@ -1735,7 +2063,9 @@ class DashboardModel {
   final List<KvItem> primaryItems;
   final List<KvItem> identityItems;
   final List<BarItem> signalBars;
+  final List<KvItem> modulationItems;
   final List<KvItem> powerItems;
+  final List<KvItem> simItems;
   final List<KvItem> downlinkItems;
   final List<KvItem> uplinkItems;
   final List<KvItem> trafficItems;
@@ -1748,18 +2078,20 @@ class DashboardModel {
 
   factory DashboardModel.from({
     required CpeVendor vendor,
+    required DisplayMode displayMode,
     required Map<String, dynamic>? snapshot,
     required Map<String, List<Map<String, String>>>? neighbors,
   }) {
     if (vendor == CpeVendor.fiberhome) {
-      return DashboardModel._fiberhome(snapshot, neighbors);
+      return DashboardModel._fiberhome(snapshot, neighbors, displayMode);
     }
-    return DashboardModel._huawei(snapshot, neighbors);
+    return DashboardModel._huawei(snapshot, neighbors, displayMode);
   }
 
   factory DashboardModel._huawei(
     Map<String, dynamic>? snapshot,
     Map<String, List<Map<String, String>>>? neighbors,
+    DisplayMode displayMode,
   ) {
     final signal = mapAt(snapshot, 'signal');
     final traffic = mapAt(snapshot, 'traffic');
@@ -1801,19 +2133,28 @@ class DashboardModel {
           ? 'RRC 正常'
           : 'RRC ${signal['rrc_status'] ?? '--'}',
       primaryItems: [
-        KvItem('Band', cleanBand(firstValue(signal, ['bandInfo', 'band']))),
-        KvItem('PCI', firstValue(signal, ['pci'])),
-        KvItem('SS-ARFCN', firstValue(signal, ['nrearfcn', 'earfcn'])),
-        KvItem('BW', firstValue(signal, ['nrdlbandwidth', 'bandwidth'])),
-        KvItem('TAC 十进制', tacDecimal),
-        KvItem('GCI 十进制', decimalText(displayedGci)),
+        KvItem(metricLabel(displayMode, '频段', 'bandInfo'),
+            cleanBand(firstValue(signal, ['bandInfo', 'band']))),
+        KvItem(metricLabel(displayMode, '物理小区', 'pci'),
+            firstValue(signal, ['pci'])),
+        KvItem(metricLabel(displayMode, '频点', 'nrearfcn'),
+            firstValue(signal, ['nrearfcn', 'earfcn'])),
+        KvItem(metricLabel(displayMode, '下行带宽', 'nrdlbandwidth'),
+            firstValue(signal, ['nrdlbandwidth', 'bandwidth'])),
+        KvItem(metricLabel(displayMode, 'TAC 十进制', 'tac_decimal'), tacDecimal),
+        KvItem(metricLabel(displayMode, 'GCI 十进制', 'gci_decimal'),
+            decimalText(displayedGci)),
       ],
       identityItems: [
-        KvItem('gNB - Cell', gnbCell),
-        KvItem('NR CellID', decimalText(parseFlexibleInt(gci))),
-        KvItem('TAC 原始', firstValue(signal, ['tac'])),
-        KvItem('DL / UL', dlUlText(signal)),
-        KvItem('ECI(LTE)', decimalText(eci)),
+        KvItem(metricLabel(displayMode, 'gNB - Cell', 'gNB_Cell'), gnbCell),
+        KvItem(metricLabel(displayMode, 'NR CellID', 'cell_id'),
+            decimalText(parseFlexibleInt(gci))),
+        KvItem(metricLabel(displayMode, 'TAC 原始', 'tac'),
+            firstValue(signal, ['tac'])),
+        KvItem(metricLabel(displayMode, '下行/上行频率', 'DL_UL_Freq'),
+            dlUlText(signal)),
+        KvItem(
+            metricLabel(displayMode, 'ECI(LTE)', 'eci_lte'), decimalText(eci)),
       ],
       signalBars: [
         BarItem.rsrp(firstValue(signal, ['nrrsrp', 'rsrp'])),
@@ -1822,25 +2163,46 @@ class DashboardModel {
         BarItem.rssi(firstValue(signal, ['nrrssi', 'rssi'])),
         BarItem.cqi(firstValue(signal, ['nrcqi0', 'cqi'])),
       ],
+      modulationItems: [
+        KvItem(metricLabel(displayMode, '下行调制', 'DL_Modulation'),
+            parseModulation(firstValue(signal, ['nrdlmcs']))),
+        KvItem(metricLabel(displayMode, '上行调制', 'UL_Modulation'),
+            parseModulation(firstValue(signal, ['nrulmcs']))),
+      ],
       powerItems: parsePower(firstValue(signal, ['nrtxpower'])),
+      simItems: [
+        KvItem(metricLabel(displayMode, '上行签约带宽', 'UL_AMBR'), '--'),
+        KvItem(metricLabel(displayMode, '下行签约带宽', 'DL_AMBR'), '--'),
+        KvItem(metricLabel(displayMode, '承载等级', 'QCI'),
+            firstValue(signal, ['QCI', 'qci'])),
+      ],
       downlinkItems: [
-        KvItem('MCS', parseMcs(firstValue(signal, ['nrdlmcs']))),
-        KvItem('调制', parseModulation(firstValue(signal, ['nrdlmcs']))),
-        KvItem('RANK', firstValue(signal, ['nrrank'])),
+        KvItem(metricLabel(displayMode, 'MCS', 'nrdlmcs'),
+            parseMcs(firstValue(signal, ['nrdlmcs']))),
+        KvItem(metricLabel(displayMode, '调制', 'DL_Modulation'),
+            parseModulation(firstValue(signal, ['nrdlmcs']))),
+        KvItem(metricLabel(displayMode, 'RANK', 'nrrank'),
+            firstValue(signal, ['nrrank'])),
       ],
       uplinkItems: [
-        KvItem('MCS', parseMcs(firstValue(signal, ['nrulmcs']))),
-        KvItem('调制', parseModulation(firstValue(signal, ['nrulmcs']))),
-        const KvItem('MIMO', '--'),
+        KvItem(metricLabel(displayMode, 'MCS', 'nrulmcs'),
+            parseMcs(firstValue(signal, ['nrulmcs']))),
+        KvItem(metricLabel(displayMode, '调制', 'UL_Modulation'),
+            parseModulation(firstValue(signal, ['nrulmcs']))),
+        KvItem(metricLabel(displayMode, 'MIMO', 'UL_MIMO'), '--'),
       ],
       trafficItems: [
-        KvItem('当前下载', formatBytes(firstValue(traffic, ['CurrentDownload']))),
-        KvItem('当前上传', formatBytes(firstValue(traffic, ['CurrentUpload']))),
-        KvItem(
-            '当前总量', formatBytes(firstValue(traffic, ['CurrentConnectTime']))),
-        KvItem('总下载', formatBytes(firstValue(traffic, ['TotalDownload']))),
-        KvItem('总上传', formatBytes(firstValue(traffic, ['TotalUpload']))),
-        KvItem('WiFi 设备',
+        KvItem(metricLabel(displayMode, '当前下载', 'CurrentDownload'),
+            formatBytes(firstValue(traffic, ['CurrentDownload']))),
+        KvItem(metricLabel(displayMode, '当前上传', 'CurrentUpload'),
+            formatBytes(firstValue(traffic, ['CurrentUpload']))),
+        KvItem(metricLabel(displayMode, '当前时长', 'CurrentConnectTime'),
+            formatBytes(firstValue(traffic, ['CurrentConnectTime']))),
+        KvItem(metricLabel(displayMode, '总下载', 'TotalDownload'),
+            formatBytes(firstValue(traffic, ['TotalDownload']))),
+        KvItem(metricLabel(displayMode, '总上传', 'TotalUpload'),
+            formatBytes(firstValue(traffic, ['TotalUpload']))),
+        KvItem(metricLabel(displayMode, 'WiFi 设备', 'CurrentWifiUser'),
             '${status['CurrentWifiUser'] ?? '--'} / ${status['TotalWifiUser'] ?? '--'}'),
       ],
       neighborCells: neighbors?['nr'] ?? <Map<String, String>>[],
@@ -1861,6 +2223,7 @@ class DashboardModel {
   factory DashboardModel._fiberhome(
     Map<String, dynamic>? snapshot,
     Map<String, List<Map<String, String>>>? neighbors,
+    DisplayMode displayMode,
   ) {
     final base = mapAt(snapshot, 'baseInfo');
     final network = mapAt(snapshot, 'networkInfo');
@@ -1894,21 +2257,28 @@ class DashboardModel {
           ? 'RRC 正常'
           : 'RRC ${base['RRCStatus'] ?? '--'}',
       primaryItems: [
-        KvItem('Band', nrBand),
-        KvItem('PCI', primaryPci),
-        KvItem('SS-ARFCN', primaryArfcn),
-        KvItem('BW', firstValue(base, ['DlBandWidth'])),
-        KvItem('TAC 十进制', decimalText(parseTacDecimal(tac))),
-        KvItem('GCI 十进制', decimalText(parseFlexibleInt(ncgi))),
+        KvItem(metricLabel(displayMode, '5G 频段', 'NR_Band'), nrBand),
+        KvItem(metricLabel(displayMode, '物理小区', 'PCI_NBR'), primaryPci),
+        KvItem(metricLabel(displayMode, '频点', 'EARFCN_NBR'), primaryArfcn),
+        KvItem(metricLabel(displayMode, '下行带宽', 'DlBandWidth'),
+            firstValue(base, ['DlBandWidth'])),
+        KvItem(metricLabel(displayMode, 'TAC 十进制', 'TAC'),
+            decimalText(parseTacDecimal(tac))),
+        KvItem(metricLabel(displayMode, 'GCI 十进制', 'NCGI'),
+            decimalText(parseFlexibleInt(ncgi))),
       ],
       identityItems: [
-        KvItem('gNB - Cell', gnbCell),
-        KvItem('NCGI', decimalText(parseFlexibleInt(ncgi))),
-        KvItem(
-            'ECGI', ecgi == '--' ? decimalText(parseFlexibleInt(ecgi)) : ecgi),
-        KvItem('软件版本', firstValue(base, ['Software_version'])),
-        KvItem('温度', formatTemperature(base['Temperature'])),
-        KvItem('Session', maskSession(session['sessionid'])),
+        KvItem(metricLabel(displayMode, 'gNB - Cell', 'gNB_Cell'), gnbCell),
+        KvItem(metricLabel(displayMode, 'NCGI', 'NCGI'),
+            decimalText(parseFlexibleInt(ncgi))),
+        KvItem(metricLabel(displayMode, 'ECGI', 'ECGI'),
+            ecgi == '--' ? decimalText(parseFlexibleInt(ecgi)) : ecgi),
+        KvItem(metricLabel(displayMode, '软件版本', 'Software_version'),
+            firstValue(base, ['Software_version'])),
+        KvItem(metricLabel(displayMode, '温度', 'Temperature'),
+            formatTemperature(base['Temperature'])),
+        KvItem(metricLabel(displayMode, '会话', 'sessionid'),
+            maskSession(session['sessionid'])),
       ],
       signalBars: [
         BarItem.rsrp(firstValue(base, ['SSB_RSRP', 'RSRP'])),
@@ -1917,29 +2287,73 @@ class DashboardModel {
         BarItem.rssi(firstValue(base, ['RSSI'])),
         BarItem.cqi(firstValue(base, ['CQI'])),
       ],
+      modulationItems: [
+        KvItem(
+          metricLabel(displayMode, '下行调制', 'DL_Modulation'),
+          fiberhomeModulation(
+            base,
+            rawKeys: const ['DL_Modulation', 'DlModulation', 'DLModulation'],
+            mcsKey: 'DlMCS',
+            displayMode: displayMode,
+          ),
+        ),
+        KvItem(
+          metricLabel(displayMode, '上行调制', 'UL_Modulation'),
+          fiberhomeModulation(
+            base,
+            rawKeys: const ['UL_Modulation', 'UlModulation', 'ULModulation'],
+            mcsKey: 'UlMCS',
+            displayMode: displayMode,
+          ),
+        ),
+      ],
       powerItems: [
-        KvItem('PUSCH', dbmText(base['PUSCH_TX_Power'])),
-        KvItem('PUCCH', dbmText(base['PUCCH_TX_Power'])),
-        KvItem('UL AMBR', kbpsText(base['UL_AMBR'])),
-        KvItem('DL AMBR', kbpsText(base['DL_AMBR'])),
+        KvItem(metricLabel(displayMode, 'PUSCH 发射功率', 'PUSCH_TX_Power'),
+            dbmText(base['PUSCH_TX_Power'])),
+        KvItem(metricLabel(displayMode, 'PUCCH 发射功率', 'PUCCH_TX_Power'),
+            dbmText(base['PUCCH_TX_Power'])),
+      ],
+      simItems: [
+        KvItem(metricLabel(displayMode, '上行签约带宽', 'UL_AMBR'),
+            ambrMbpsText(base['UL_AMBR'])),
+        KvItem(metricLabel(displayMode, '下行签约带宽', 'DL_AMBR'),
+            ambrMbpsText(base['DL_AMBR'])),
+        KvItem(
+            metricLabel(displayMode, '承载等级', 'QCI'), firstValue(base, ['QCI'])),
       ],
       downlinkItems: [
-        KvItem('MCS', firstValue(base, ['DlMCS'])),
-        KvItem('MIMO', firstValue(base, ['DlMimo'])),
-        KvItem('带宽', firstValue(base, ['DlBandWidth'])),
+        KvItem(metricLabel(displayMode, 'MCS', 'DlMCS'),
+            firstValue(base, ['DlMCS'])),
+        KvItem(metricLabel(displayMode, 'MIMO 层数', 'DlMimo'),
+            firstValue(base, ['DlMimo'])),
+        KvItem(metricLabel(displayMode, '带宽', 'DlBandWidth'),
+            firstValue(base, ['DlBandWidth'])),
       ],
       uplinkItems: [
-        KvItem('MCS', firstValue(base, ['UlMCS'])),
-        KvItem('MIMO', firstValue(base, ['UlMimo'])),
-        KvItem('带宽', firstValue(base, ['UlBandWidth'])),
+        KvItem(metricLabel(displayMode, 'MCS', 'UlMCS'),
+            firstValue(base, ['UlMCS'])),
+        KvItem(metricLabel(displayMode, 'MIMO 层数', 'UlMimo'),
+            firstValue(base, ['UlMimo'])),
+        KvItem(metricLabel(displayMode, '带宽', 'UlBandWidth'),
+            firstValue(base, ['UlBandWidth'])),
       ],
       trafficItems: [
-        KvItem('当前下载', rateText(base['RxSpeed'])),
-        KvItem('当前上传', rateText(base['TxSpeed'])),
-        KvItem('今日下载', formatBytes(base['todayRxBytes'])),
-        KvItem('今日上传', formatBytes(base['todayTxBytes'])),
-        KvItem('当月下载', formatBytes(base['monthRxBytes'])),
-        KvItem('当月上传', formatBytes(base['monthTxBytes'])),
+        KvItem(metricLabel(displayMode, '当前下载', 'RxSpeed'),
+            rateText(base['RxSpeed'])),
+        KvItem(metricLabel(displayMode, '当前上传', 'TxSpeed'),
+            rateText(base['TxSpeed'])),
+        KvItem(metricLabel(displayMode, '今日下载', 'todayRxBytes'),
+            formatBytes(base['todayRxBytes'])),
+        KvItem(metricLabel(displayMode, '今日上传', 'todayTxBytes'),
+            formatBytes(base['todayTxBytes'])),
+        KvItem(metricLabel(displayMode, '当月下载', 'monthRxBytes'),
+            formatBytes(base['monthRxBytes'])),
+        KvItem(metricLabel(displayMode, '当月上传', 'monthTxBytes'),
+            formatBytes(base['monthTxBytes'])),
+        KvItem(
+            metricLabel(displayMode, 'IMS', 'ims'), firstValue(base, ['ims'])),
+        KvItem(metricLabel(displayMode, '连接类型', 'ConnectType'),
+            firstValue(base, ['ConnectType'])),
       ],
       neighborCells: neighbors?['nr'] ?? <Map<String, String>>[],
       caSummary:
@@ -2167,6 +2581,19 @@ String firstValue(
   return fallback;
 }
 
+String metricLabel(DisplayMode mode, String simple, String raw) {
+  return mode == DisplayMode.professional ? raw : simple;
+}
+
+String timeText(DateTime? value) {
+  if (value == null) {
+    return '--';
+  }
+  return '${twoDigits(value.hour)}:${twoDigits(value.minute)}:${twoDigits(value.second)}';
+}
+
+String twoDigits(int value) => value.toString().padLeft(2, '0');
+
 String operatorLabel(Map<String, String> plmn) {
   final full = plmn['FullName'] ?? plmn['fullname'] ?? '';
   final numeric = plmn['Numeric'] ?? plmn['numeric'] ?? plmn['plmn'] ?? '';
@@ -2257,6 +2684,39 @@ String parseModulation(String value) {
   return match?.group(1) ?? '--';
 }
 
+String fiberhomeModulation(
+  Map<String, String> data, {
+  required List<String> rawKeys,
+  required String mcsKey,
+  required DisplayMode displayMode,
+}) {
+  final raw = firstValue(data, rawKeys, fallback: '');
+  if (raw.isNotEmpty) {
+    return raw;
+  }
+  if (displayMode == DisplayMode.professional) {
+    return '--';
+  }
+  return modulationEstimateFromMcs(data[mcsKey]);
+}
+
+String modulationEstimateFromMcs(String? value) {
+  final mcs = int.tryParse(value ?? '');
+  if (mcs == null) {
+    return '--';
+  }
+  if (mcs <= 9) {
+    return 'QPSK(估)';
+  }
+  if (mcs <= 16) {
+    return '16QAM(估)';
+  }
+  if (mcs <= 28) {
+    return '64QAM(估)';
+  }
+  return '256QAM(估)';
+}
+
 String formatBytes(String? value) {
   final bytes = int.tryParse(value ?? '');
   if (bytes == null) {
@@ -2310,6 +2770,18 @@ String kbpsText(String? value) {
     return '${(number / 1000).toStringAsFixed(1)} Mbps';
   }
   return '$number Kbps';
+}
+
+String ambrMbpsText(String? value) {
+  final number = int.tryParse(value ?? '');
+  if (number == null) {
+    return '--';
+  }
+  final mbps = number / 1000;
+  final text = mbps == mbps.roundToDouble()
+      ? mbps.toStringAsFixed(0)
+      : mbps.toStringAsFixed(1);
+  return '$text Mbps';
 }
 
 String maskSession(String? value) {

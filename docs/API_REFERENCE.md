@@ -137,7 +137,10 @@ The current Fiberhome configuration and status calls use:
 ```text
 POST /api/tmp/FHTOOLAPIS
 Content-Type: application/json
+Content-Length: <exact utf8 byte length>
 ```
+
+Important transport detail: the tested Fiberhome device returns HTTP 403 for chunked JSON POST bodies and for POST calls that reuse the login sessionid. Clients should send a fixed-length body, call `get_refresh_sessionid` before each `FHTOOLAPIS` POST, and bypass desktop proxy environment variables for `192.168.8.1`.
 
 Request shape:
 
@@ -180,3 +183,15 @@ Captured lock-cell mapping:
 | NR | `2` |
 
 Known gaps: Fiberhome write operations still need hardware validation after readback. The currently captured `base_info` endpoint provides a combined primary/neighbor/status snapshot rather than separate Huawei-style signal, traffic, and neighbor APIs.
+
+UI field translations used by Simple mode:
+
+| Source field | Simple label | Unit / note |
+| --- | --- | --- |
+| `UL_AMBR` | 上行签约带宽 | Mbps, converted from Kbps-style integer values |
+| `DL_AMBR` | 下行签约带宽 | Mbps, converted from Kbps-style integer values |
+| `QCI` | 承载等级 | SIM/default bearer quality class |
+| `PUSCH_TX_Power` | PUSCH 发射功率 | dBm |
+| `PUCCH_TX_Power` | PUCCH 发射功率 | dBm |
+| `DL_Modulation` | 下行调制 | Uses raw field when present; otherwise estimates from `DlMCS` in Simple mode |
+| `UL_Modulation` | 上行调制 | Uses raw field when present; otherwise estimates from `UlMCS` in Simple mode |

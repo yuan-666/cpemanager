@@ -34,9 +34,15 @@
 - `v0.2.0` release assets 本地暂存在 `dist/release/v0.2.0/`，该目录被 git ignore，资产通过 GitHub Release 上传。
 - `v0.2.0` GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`。
 - 2026-05-13 已确认 release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
-- 当前开发版本：Python `0.3.1`，Flutter App `0.3.1+4`。
+- 当前开发版本：Python `0.3.2`，Flutter App `0.3.2+5`。
+- 当前本地 `v0.3.2` Android 产物：`dist/release/v0.3.2/CPEManager-android-v0.3.2-release.apk`、`dist/release/v0.3.2/CPEManager-android-v0.3.2-debug.apk`、`dist/release/v0.3.2/SHA256SUMS.txt`。
+- `v0.3.2` debug/release APK 已在 `flutter clean` 后重建，并由 `aapt dump badging` 确认：`versionName=0.3.2`、`versionCode=5`、包名 `com.cpemanager.app`。
 - 最近已发布版本：`v0.3.1`，GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1`。
 - 2026-05-13 已确认 `v0.3.1` release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
+- 2026-05-13 本机烽火 403 排查确认：`FHTOOLAPIS` JSON POST 必须发送固定 `Content-Length`，并且每次 POST 前都要重新 `get_refresh_sessionid`；chunked transfer 或复用登录 sessionid 都会返回 HTTP 403；LAN CPE 请求还应绕过桌面代理直连。
+- 2026-05-13 移动端看板方向：设备选择使用可扩展“设备档案”下拉；状态读取后默认每 5 秒自动刷新；用户可在简洁/专业模式间切换，简洁模式翻译字段，专业模式保留源参数名。
+- 烽火 SIM 信息展示约定：`UL_AMBR`=上行签约带宽，`DL_AMBR`=下行签约带宽，二者按 Mbps 显示；`QCI`=承载等级。AMBR 不放在上行功率卡。
+- 烽火射频质量展示约定：放置 `DL_Modulation` 和 `UL_Modulation` 两个小指标；若原文没有调制字段，简洁模式可基于 MCS 做估算，专业模式显示源字段。
 - 本地 HAR 抓包目录 `烽火/`、`烽火(1)/` 不要提交；HAR 内含 `sessionid`，`.gitignore` 已忽略 `*.har` 和 `烽火*/`。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
@@ -61,6 +67,14 @@ python -m pip install -e ".[desktop-build]"
 python -m unittest discover -s tests
 python tools/build_desktop.py --onedir
 ```
+
+烽火只读真机 smoke test：
+
+```bash
+CPE_PASSWORD="管理密码" conda run -n cpemanager python tools/fiberhome_readonly_smoke.py
+```
+
+该脚本只调用 `get_refresh_sessionid`、`app_do_login` 和 `app_get_*` 方法，不做锁频、网络模式、飞行模式、重启或任何 `app_set_*` 写操作。
 
 版本管理命令参考：
 
@@ -91,6 +105,7 @@ Flutter App 采用 Dart 客户端：
 - `apps/flutter_cpemanager/lib/api/fiberhome_client.dart`：Fiberhome/烽火 `FHNCAPIS` + `FHTOOLAPIS` JSON 客户端，当前使用用户名/密码自动获取 sessionid 并登录。
 - `apps/flutter_cpemanager/lib/domain/cell_math.dart`：TAC 十进制、LTE ECI、NR GCI 和 ECI/GCI 拆分工具。
 - `apps/flutter_cpemanager/lib/main.dart`：深色密集看板 UI，含 Huawei/Fiberhome 设备选择、PCC、载波聚合、锁频、速率/原始快照工作区。
+- `main.dart` 的移动端 UI 需要避免小屏溢出：指标 tile 使用稳定高度和数值自适应缩放；切换底部工作区时重置滚动位置。
 
 兼容脚本必须继续保留：
 
@@ -138,6 +153,9 @@ Fiberhome/烽火已确认 API：
 - `GET /api/tmp/FHNCAPIS?ajaxmethod=get_refresh_sessionid`
 - `POST /api/tmp/FHTOOLAPIS`
 - JSON 请求体包含 `ajaxmethod`、`sessionid`、`dataObj`。
+- `POST /api/tmp/FHTOOLAPIS` 必须带准确 `Content-Length`；Dart 默认 chunked body 会在本机烽火设备上触发 HTTP 403。
+- 每次 `FHTOOLAPIS` POST 前都要重新调用 `get_refresh_sessionid`；登录用的 sessionid 不能继续复用给 `app_get_network_info`、`app_get_lockband`、`app_get_cell_list`。
+- 客户端访问 `192.168.8.1` 时应直连，不要继承系统/conda 的 HTTP proxy 环境变量。
 - 已确认 `ajaxmethod`：`app_do_login`、`app_get_base_info`、`app_get_airplane`、`app_get_network_info`、`app_set_network_info`、`app_get_lockband`、`app_set_lockband`、`app_get_cell_list`、`app_set_cell_list`。
 - `app_get_base_info` 返回烽火信号/流量/设备/邻区混合状态，字段包括 `RSSI/RSRQ/SSB_RSRP/SSB_SINR/PLMN/NR_Band/TAC/NCGI/EARFCN_NBR/PCI_NBR/Temperature/TxSpeed/RxSpeed/modelName/RRCStatus/DlMCS/UlMCS/CQI/DlMimo/UlMimo/Software_version/WorkMode`。
 - 网络模式枚举：LTE=`networkMode:0, ENDC:1`；SA=`2,1`；NSA=`3,2`；Auto=`3,3`。
@@ -189,7 +207,7 @@ Flutter 方向：
 - Android debug APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`。
 - Android release APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
 - Web/PWA 已验证产出：`apps/flutter_cpemanager/build/web`。
-- 当前本地 APK 已由 Flutter app `0.3.1+4` 重新构建；`v0.3.1` GitHub Release 使用同一版本线整理资产。
+- 当前本地 APK 已由 Flutter app `0.3.2+5` 重新构建；`v0.3.1` 仍是最近已发布的 GitHub Release。
 - Android 包名/namespace：`com.cpemanager.app`。
 - iOS bundle id：`com.cpemanager.app`；macOS bundle id：`com.cpemanager.app.macos`；Windows executable name：`CPEManager`；web manifest title：`CPE Manager`。
 - Android 允许明文 HTTP 访问 `192.168.8.1`；iOS 已配置局域网说明和 HTTP 放行；macOS 已配置 network client entitlement。

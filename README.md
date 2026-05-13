@@ -4,17 +4,27 @@ Huawei CPE management toolkit, now expanding into a multi-vendor CPE app. The pr
 
 ## Version
 
+- Current local build version: `0.3.2`
 - Current published version: `0.3.1`
-- Current Flutter app version: `0.3.1+4`
+- Current Flutter app version: `0.3.2+5`
 - Release state: alpha
 - Maintainer account email: `2991077067@qq.com`
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
-- Latest release notes: [docs/releases/v0.3.1.md](docs/releases/v0.3.1.md)
+- Current build notes: [docs/releases/v0.3.2.md](docs/releases/v0.3.2.md)
+- Latest published release notes: [docs/releases/v0.3.1.md](docs/releases/v0.3.1.md)
 - Handoff docs: [HANDOFF.md](HANDOFF.md), [PROJECT_MEMORY.md](PROJECT_MEMORY.md), [MODIFICATIONS.md](MODIFICATIONS.md)
 
 ## Latest Release Assets
 
 Release `v0.3.1` is published at [GitHub Releases](https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1).
+
+Local `v0.3.2` Android APKs are staged under `dist/release/v0.3.2/`:
+
+| Asset | Use |
+| --- | --- |
+| `CPEManager-android-v0.3.2-release.apk` | Recommended Android phone test package. |
+| `CPEManager-android-v0.3.2-debug.apk` | Debug Android package for troubleshooting. |
+| `SHA256SUMS.txt` | Checksums for the local APK assets. |
 
 | Asset | Use |
 | --- | --- |
@@ -28,7 +38,7 @@ Release `v0.3.1` is published at [GitHub Releases](https://github.com/yuan-666/c
 Android alpha install:
 
 ```bash
-adb install -r CPEManager-android-v0.3.1-release.apk
+adb install -r dist/release/v0.3.2/CPEManager-android-v0.3.2-release.apk
 ```
 
 Python wheel install:
@@ -36,6 +46,14 @@ Python wheel install:
 ```bash
 python -m pip install cpemanager-0.3.1-py3-none-any.whl
 ```
+
+Fiberhome read-only smoke test:
+
+```bash
+CPE_PASSWORD="管理密码" conda run -n cpemanager python tools/fiberhome_readonly_smoke.py
+```
+
+This probe only calls `get_refresh_sessionid`, `app_do_login`, and `app_get_*` methods. It never calls `app_set_*`, lock writes, reboot, reset, or airplane writes.
 
 ## What Is Included
 
@@ -45,7 +63,7 @@ python -m pip install cpemanager-0.3.1-py3-none-any.whl
 - Tkinter desktop GUI command: `cpemanager-desktop`.
 - PyInstaller desktop build path for macOS and Windows.
 - Flutter/Dart mobile-first app for Android, iOS, Windows, macOS, web, and a future HarmonyOS/OpenHarmony spike.
-- Flutter app now includes a Huawei/Fiberhome device selector; Fiberhome support is alpha and based on captured `FHTOOLAPIS` configuration calls.
+- Flutter app now includes a scalable Huawei/Fiberhome device-profile selector, 5-second auto refresh, Simple/Pro display modes, SIM information, and RF modulation tiles; Fiberhome support is alpha and based on captured `FHTOOLAPIS` calls.
 - Unit tests, API notes, packaging strategy, and handoff documentation.
 - Active GitHub Actions desktop build workflow: [.github/workflows/desktop-build.yml](.github/workflows/desktop-build.yml)
 - Workflow template copy: [docs/github-actions/desktop-build.yml](docs/github-actions/desktop-build.yml)
@@ -82,6 +100,7 @@ Fiberhome/烽火 alpha APIs captured from HAR:
 - `POST /api/tmp/FHTOOLAPIS` with JSON body fields `ajaxmethod`, `sessionid`, and `dataObj`.
 - Confirmed methods: `app_do_login`, `app_get_base_info`, `app_get_airplane`, `app_get_network_info`, `app_set_network_info`, `app_get_lockband`, `app_set_lockband`, `app_get_cell_list`, `app_set_cell_list`.
 - `app_get_base_info` now supplies Fiberhome signal, traffic, model, software, TAC/NCGI, MCS, MIMO, temperature, and neighbor rows.
+- Fiberhome `FHTOOLAPIS` POST calls must use fixed `Content-Length` JSON bodies and a fresh `get_refresh_sessionid` value per POST; chunked transfer or reusing the login sessionid returns HTTP 403 on the tested device. The app now also bypasses desktop proxy settings for LAN CPE traffic.
 
 ## Conda Setup
 
@@ -154,6 +173,8 @@ Current mobile device modes:
 
 - Huawei: password login, signal/status/traffic/PLMN reads, neighbor reads, automatic network mode, and unlock-all.
 - Fiberhome/烽火: username/password login for the captured `FHNCAPIS` + `FHTOOLAPIS` flow, live `app_get_base_info` dashboard, Auto/LTE/SA/NSA mode writes, lock Band, NR lock cell, 4G+5G combined lock cell, clear lock-cell list, and readback of network/lock state.
+- Display modes: Simple mode translates fields such as `UL_AMBR` into “上行签约带宽”; Pro mode keeps source parameter names for debugging and handoff.
+- Auto refresh: after a successful read, the mobile dashboard refreshes every 5 seconds unless disabled in the header.
 
 Cell calculations shown in the app:
 

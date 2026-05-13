@@ -77,12 +77,14 @@ apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk
 Release asset staging:
 
 ```bash
-dist/release/v0.3.1/
+dist/release/v0.3.2/
 ```
 
 The previous `v0.2.0` GitHub Release includes Android release/debug APKs, a macOS arm64 desktop `.app.zip`, a Web/PWA zip, the Python wheel, and `SHA256SUMS.txt`.
 
 The `v0.3.1` GitHub Release includes Android release/debug APKs, a macOS arm64 desktop `.app.zip`, a Web/PWA zip, the Python wheel, and `SHA256SUMS.txt`. The Flutter app version is `0.3.1+4`.
+
+The local `v0.3.2` build line is for the Fiberhome readback and mobile dashboard usability fixes. Its Flutter app version is `0.3.2+5`; Android debug/release APKs are staged under `dist/release/v0.3.2/`.
 
 Install to a USB-connected Android phone with developer mode and USB debugging enabled:
 

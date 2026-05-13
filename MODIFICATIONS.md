@@ -4,6 +4,39 @@
 
 ## 2026-05-13
 
+- 版本推进到 `0.3.2`：
+  - Python 包版本：`0.3.2`。
+  - Flutter App 版本：`0.3.2+5`，Android versionCode 目标为 `5`。
+  - Dart Huawei/Fiberhome User-Agent 同步到 `CPEManager/0.3.2`。
+  - 新增本地构建说明：`docs/releases/v0.3.2.md`。
+  - 已重建 Android debug/release APK，并整理到 `dist/release/v0.3.2/`：
+    - `CPEManager-android-v0.3.2-release.apk`
+    - `CPEManager-android-v0.3.2-debug.apk`
+    - `SHA256SUMS.txt`
+  - 2026-05-13 重新执行 `flutter clean` 后重建 Android debug/release APK，修复 debug 包可能沿用旧构建缓存的问题。
+  - `aapt dump badging` 确认 debug/release APK：包名 `com.cpemanager.app`、版本 `0.3.2`、versionCode `5`。
+  - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.3.2`。
+- 优化移动端烽火看板显示：
+  - 修复截图中 `BOTTOM OVERFLOWED` 红条：`DenseKvGrid` 改为固定高度网格，数值使用自适应缩放，长字段不再撑爆卡片。
+  - 新增 5 秒自动刷新：首次读取成功后自动轮询，顶部可切换自动/手动并显示最近更新时间。
+  - 新增简洁/专业模式：简洁模式翻译字段；专业模式保留 `UL_AMBR`、`DL_AMBR`、`QCI`、`DL_Modulation`、`UL_Modulation` 等源参数名。
+  - 新增 SIM 信息卡：展示上行签约带宽、下行签约带宽、承载等级；AMBR 统一按 Mbps 展示。
+  - 上行功率卡只保留 PUSCH/PUCCH 发射功率，移除 UL/DL AMBR。
+  - 射频质量卡新增下行/上行调制两个小指标；原文无调制字段时，简洁模式按 MCS 做估算，专业模式显示源字段空值。
+  - 设备选择从两段按钮改为设备档案下拉，便于后续增加更多 CPE 型号。
+  - 切换底部工作区时重置滚动位置，避免登录页继承其他页面的底部滚动位置。
+  - 本轮 UI 改动验证通过：`flutter test`、`flutter analyze`、`JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug`、`JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release`。
+- 修复烽火本机登录/读取 403：
+  - 本机直连 `192.168.8.1` 确认 `GET /api/tmp/FHNCAPIS?ajaxmethod=get_refresh_sessionid` 返回 200 和 sessionid。
+  - 对比 `POST /api/tmp/FHTOOLAPIS` 只读接口发现根因：带 `Content-Length` 的 JSON POST 返回 200，而 chunked transfer 返回 403。
+  - 继续登录后验证确认第二个根因：烽火每次 `FHTOOLAPIS` POST 读取前都要重新 `get_refresh_sessionid`，复用登录 sessionid 会返回 403。
+  - Flutter `FiberhomeClient` 改为显式编码 UTF-8 JSON、设置 `request.contentLength`、再写入 bytes，避免 Dart 默认分块传输。
+  - Flutter `FiberhomeClient.call()` 改为每次 POST 前刷新 sessionid，使 `app_get_network_info`、`app_get_lockband`、`app_get_cell_list` 和后续写入动作都遵循 HAR 的 per-request sessionid 行为。
+  - Flutter Huawei/Fiberhome 客户端都默认 `DIRECT` 访问 LAN CPE，避免系统代理影响 `192.168.8.1`。
+  - Python `HuaweiCPE` 设置 `requests.Session.trust_env = False`，避免 conda/Python 请求被桌面代理劫持到 `127.0.0.1:7890`。
+  - 新增 `tools/fiberhome_readonly_smoke.py`，只调用 `get_refresh_sessionid`、`app_do_login` 和 `app_get_*` 读取接口，便于后续带 `CPE_PASSWORD` 跑完整烽火只读验证。
+  - 使用用户提供的真实管理密码完成本机只读验证：`app_do_login` 返回 `login_result=0`；`app_get_base_info`、`app_get_airplane`、`app_get_network_info`、`app_get_lockband`、`app_get_cell_list` 全部返回 HTTP 200。
+  - 验证通过：`flutter test`、`flutter analyze`、`JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug`、`conda run -n cpemanager python -m unittest discover -s tests`。
 - 修复华为登录和完善烽火真实状态接口：
   - 新增读取 `华为.har` 的登录差异：优先使用 `/api/webserver/SesTokInfo`，并为 `challenge_login` 和 `authentication_login` 分别获取 token，修复 App 登录时报 `challenge_login returned error code 125003` 的主要原因。
   - Python `HuaweiCPE` 和 Flutter `CpeClient` 同步采用 SesTokInfo 优先、旧 `/api/webserver/token` fallback 的策略。

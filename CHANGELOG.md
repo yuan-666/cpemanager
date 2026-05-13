@@ -2,6 +2,41 @@
 
 All notable changes to this project are documented here.
 
+## 0.3.2 - 2026-05-13
+
+Fiberhome readback and mobile dashboard usability release.
+
+### Fixed
+
+- Fixed Fiberhome/烽火 HTTP 403 on `FHTOOLAPIS` JSON POST calls by sending a fixed `Content-Length` body instead of Dart's default chunked transfer.
+- Fixed Fiberhome POST readback after login by refreshing `get_refresh_sessionid` before each `FHTOOLAPIS` POST, matching captured HAR behavior where every POST uses a fresh sessionid.
+- Bypassed desktop HTTP proxy environment settings for LAN CPE clients so `192.168.8.1` traffic goes direct from Flutter and Python.
+- Fixed mobile dashboard tile overflow that appeared as Flutter red/yellow debug stripes on long Fiberhome values.
+- Reset the scroll position when switching bottom workspaces so the login view no longer opens at the previous tab's scroll offset.
+
+### Added
+
+- Added 5-second auto refresh after the first successful read, with a header toggle and last-update timestamp.
+- Added Simple/Pro display modes: Simple translates common fields for normal users; Pro keeps source parameter names such as `UL_AMBR`, `DL_AMBR`, `QCI`, `DL_Modulation`, and `UL_Modulation`.
+- Added a SIM information panel for `UL_AMBR`, `DL_AMBR`, and `QCI`, displayed in Mbps where applicable.
+- Added RF-quality modulation tiles for downlink and uplink modulation.
+- Reworked the CPE device selector into a scalable device-profile dropdown for future multi-device support.
+- Bumped Flutter app version to `0.3.2+5` and Python package version to `0.3.2`.
+
+### Verified
+
+- `dart format apps/flutter_cpemanager/lib/main.dart apps/flutter_cpemanager/test/widget_test.dart apps/flutter_cpemanager/lib/api/cpe_client.dart apps/flutter_cpemanager/lib/api/fiberhome_client.dart`
+- `flutter test`
+- `flutter analyze`
+- `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug`
+- `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release`
+- `conda run -n cpemanager python -m unittest discover -s tests`
+- `conda run -n cpemanager python -m compileall -q src tests cpe_login.py cpe_signal.py cpe_nbr.py cpe_lock.py cpe_netmode.py cpe_antenna.py tools/build_desktop.py tools/fiberhome_readonly_smoke.py packaging/desktop_entry.py`
+- `conda run -n cpemanager cpemanager-desktop --version`
+- `flutter clean` followed by fresh debug/release APK rebuilds.
+- `aapt dump badging` confirmed both Android debug and release APKs use `versionName='0.3.2'` and `versionCode='5'`.
+- Local Fiberhome read-only probe with the real device password: `get_refresh_sessionid`, `app_do_login`, `app_get_base_info`, `app_get_airplane`, `app_get_network_info`, `app_get_lockband`, and `app_get_cell_list` return HTTP 200.
+
 ## 0.3.1 - 2026-05-13
 
 Huawei login and Fiberhome live-status release.

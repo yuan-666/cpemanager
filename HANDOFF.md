@@ -15,9 +15,9 @@
 - Flutter App 已加入 Huawei/Fiberhome(烽火) 设备选择；烽火当前支持基于 `烽火(1)` 的用户名/密码登录、base_info 状态读取和配置操作
 - API/打包文档和基础测试
 
-当前发布版本：`0.3.1`
+当前已发布版本：`0.3.1`
 
-当前开发版本：Python `0.3.1`，Flutter App `0.3.1+4`
+当前开发版本：Python `0.3.2`，Flutter App `0.3.2+5`
 
 首个提交描述：
 
@@ -38,6 +38,9 @@ GitHub 同步状态：
 - GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1`
 - Release assets 已确认全部上传完成。
 - 本轮登录修复和烽火 base_info 改动已整理为 `v0.3.1` GitHub Release；本地 APK 已重新构建。
+- 当前未发布修复：烽火 `FHTOOLAPIS` POST 已改为固定 `Content-Length`，每次 POST 前刷新 `get_refresh_sessionid`，并绕过桌面代理直连 LAN，解决本机复现的 403。
+- 当前未发布 UI 迭代：移动端新增 5 秒自动刷新、简洁/专业模式、SIM 信息卡、射频调制小指标、可扩展设备档案下拉，并修复小屏指标卡溢出和登录页继承滚动位置的问题。
+- 当前本地版本推进：`0.3.2` / Flutter `0.3.2+5`，已执行 `flutter clean` 后重建 Android debug/release APK，两个包均由 `aapt` 确认为 `versionName=0.3.2`、`versionCode=5`。
 
 ## 先读文件
 
@@ -55,6 +58,7 @@ GitHub 同步状态：
 10. `apps/flutter_cpemanager/lib/api/cpe_client.dart`
 11. `apps/flutter_cpemanager/lib/api/fiberhome_client.dart`
 12. `apps/flutter_cpemanager/lib/domain/cell_math.dart`
+13. `apps/flutter_cpemanager/test/widget_test.dart`
 
 ## 环境准备
 
@@ -128,10 +132,21 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
 - `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`
 - `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`
-- 当前本地 APK 来自 Flutter app `0.3.1+4`。
+- 当前本地 APK 来自 Flutter app `0.3.2+5`，release APK 内部版本已确认为 `versionName=0.3.2`、`versionCode=5`。
+
+烽火只读真机 smoke test：
+
+```bash
+CPE_PASSWORD="管理密码" conda run -n cpemanager python tools/fiberhome_readonly_smoke.py
+```
+
+这个脚本只登录和读取 `app_get_*`，不会调用 `app_set_*` 或锁频/断网类写操作。
 
 Release assets staging:
 
+- `dist/release/v0.3.2/CPEManager-android-v0.3.2-release.apk`
+- `dist/release/v0.3.2/CPEManager-android-v0.3.2-debug.apk`
+- `dist/release/v0.3.2/SHA256SUMS.txt`
 - `dist/release/v0.3.1/CPEManager-android-v0.3.1-release.apk`
 - `dist/release/v0.3.1/CPEManager-android-v0.3.1-debug.apk`
 - `dist/release/v0.3.1/CPEManager-macos-arm64-v0.3.1-app.zip`
@@ -164,6 +179,7 @@ conda run -n cpemanager python -m unittest discover -s tests
 conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.3.1
 conda run -n cpemanager python tools/build_desktop.py --onedir
 conda run -n cpemanager cpemanager-desktop --version
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
 ```
 
 结果：
@@ -171,7 +187,7 @@ conda run -n cpemanager cpemanager-desktop --version
 ```text
 Ran 10 tests in 0.001s
 OK
-CPE Manager 0.3.1
+CPE Manager 0.3.2
 ```
 
 本轮 Flutter/Fiberhome 验证额外确认：
@@ -183,7 +199,20 @@ flutter build web
 conda run -n cpemanager python -m unittest discover -s tests
 ```
 
-Flutter 测试当前 5 个用例通过；`flutter analyze` 无问题。
+Flutter 测试当前 9 个用例通过；`flutter analyze` 无问题。
+
+本机烽火只读接口排查：
+
+```text
+get_refresh_sessionid -> HTTP 200，返回 sessionid
+app_get_base_info -> HTTP 200，未登录返回 timeout=true
+app_get_airplane -> HTTP 200，未登录返回 timeout=true
+app_get_network_info fixed-length POST -> HTTP 200，未登录返回 timeout=true
+app_get_network_info chunked POST -> HTTP 403
+登录后刷新 sessionid 再读 app_get_network_info -> HTTP 200，networkMode=3, ENDC=3
+登录后刷新 sessionid 再读 app_get_lockband -> HTTP 200，NRLockBAND=79
+登录后刷新 sessionid 再读 app_get_cell_list -> HTTP 200，enable=0, lock_cell=[]
+```
 
 编译检查通过：
 
@@ -199,7 +228,8 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 
 ## 当前限制
 
-- 没有做真实 CPE 登录测试，因为需要真实密码并确认机器连到 `192.168.8.1`。
+- 2026-05-13 已用真实密码完成烽火登录后的只读接口验证。不要把密码写入文档、命令参数或提交历史；后续测试通过 `CPE_PASSWORD` 环境变量或 TTY 输入。
+- 当前移动 UI 在本轮改动后已补跑 Flutter analyze/test，并重建 `0.3.2` debug/release APK。
 - 没有做真实写操作测试，锁频/网络模式/天线切换可能影响设备网络，必须谨慎。
 - 烽火 `烽火(1)/login_v1.py` 已确认登录流程：`GET /api/tmp/FHNCAPIS?ajaxmethod=get_refresh_sessionid`，再 `POST /api/tmp/FHTOOLAPIS` 的 `app_do_login`。
 - 烽火 `信号(1).har` 已确认 `app_get_base_info` 返回实时信号、流量、设备信息和邻区 CSV 字段；App 已映射到 dashboard。
