@@ -37,6 +37,7 @@
 - `v0.3.0` 发布说明文件：`docs/releases/v0.3.0.md`。
 - `v0.3.0` release assets 本地暂存在 `dist/release/v0.3.0/`，该目录被 git ignore，资产通过 GitHub Release 上传。
 - `v0.3.0` GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.0`。
+- 2026-05-13 已确认 `v0.3.0` release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
 - 当前 Flutter App 版本：`0.3.0+3`。
 - 本地 HAR 抓包目录 `烽火/` 不要提交；HAR 内含 `sessionid`，`.gitignore` 已忽略 `*.har`。
 - conda 环境名：`cpemanager`

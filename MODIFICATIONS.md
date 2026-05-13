@@ -30,6 +30,8 @@
   - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.3.0`。
   - `conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist/release/v0.3.0` 通过。
   - `conda run -n cpemanager python tools/build_desktop.py --onedir` 通过。
+  - 已创建 GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.0`。
+  - 已确认 6 个 release assets 全部上传完成，状态均为 `uploaded`。
 - 发布 `v0.2.0` GitHub Release：
   - 重新构建 Android release APK：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`。
   - 重新构建 Android debug APK、Web/PWA、Python wheel、macOS arm64 桌面 `.app`。
