@@ -24,6 +24,8 @@
     - `SHA256SUMS.txt`
   - `aapt dump badging` 确认 release APK：包名 `com.cpemanager.app`、版本 `0.3.1`、versionCode `4`。
   - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.3.1`。
+  - 已创建 GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1`。
+  - 已确认 6 个 release assets 全部上传完成，状态均为 `uploaded`。
 - 推进 Flutter App 看板化和烽火/华为设备选择：
   - 将 `apps/flutter_cpemanager/lib/main.dart` 从偏简洁的状态页改成深色密集工具看板：登录、PCC、载波聚合、锁频、速率/原始快照五个工作区。
   - 新增 Huawei / Fiberhome(烽火) 设备选择，切换后分别使用 Huawei XML 客户端或 Fiberhome `FHTOOLAPIS` 客户端。

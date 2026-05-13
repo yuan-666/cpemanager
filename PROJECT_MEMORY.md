@@ -36,6 +36,7 @@
 - 2026-05-13 已确认 release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
 - 当前开发版本：Python `0.3.1`，Flutter App `0.3.1+4`。
 - 最近已发布版本：`v0.3.1`，GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1`。
+- 2026-05-13 已确认 `v0.3.1` release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
 - 本地 HAR 抓包目录 `烽火/`、`烽火(1)/` 不要提交；HAR 内含 `sessionid`，`.gitignore` 已忽略 `*.har` 和 `烽火*/`。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
