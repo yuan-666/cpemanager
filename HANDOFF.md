@@ -30,6 +30,8 @@ GitHub 同步状态：
 - 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`
 - GitHub Actions：`Desktop Build` workflow 已 active。
 - 发布说明：`docs/releases/v0.2.0.md`
+- GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`
+- Release assets 已确认全部上传完成。
 
 ## 先读文件
 

@@ -16,6 +16,8 @@
     - `SHA256SUMS.txt`
   - 新增发布说明：`docs/releases/v0.2.0.md`。
   - 更新 `README.md`、`apps/flutter_cpemanager/README.md`、`CHANGELOG.md`、`docs/APP_PACKAGING_STRATEGY.md`，写明下载资产、安装方式、验证命令和 alpha 限制。
+  - 已创建 GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`。
+  - 已确认 6 个 release assets 全部上传完成，状态均为 `uploaded`。
 - 完成移动端 Android 可运行目标：
   - 安装并验证 Flutter `3.41.9`、Dart `3.11.5`、OpenJDK 17、Android SDK 36、Build Tools 36.0.0、NDK 28.2.13676358、CMake 3.22.1。
   - 在 `apps/flutter_cpemanager` 生成 Android、iOS、macOS、Windows、web 原生平台目录。

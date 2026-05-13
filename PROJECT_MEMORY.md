@@ -32,6 +32,8 @@
 - 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`。
 - `v0.2.0` 发布说明文件：`docs/releases/v0.2.0.md`。
 - `v0.2.0` release assets 本地暂存在 `dist/release/v0.2.0/`，该目录被 git ignore，资产通过 GitHub Release 上传。
+- `v0.2.0` GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`。
+- 2026-05-13 已确认 release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
 - 主要 Python 运行依赖：`requests`
