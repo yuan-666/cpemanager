@@ -79,18 +79,19 @@ class CpeClient {
     final challenge = await postXml(
       '/api/user/challenge_login',
       '<request>'
-      '<username>${_xmlEscape(username)}</username>'
-      '<firstnonce>$firstNonce</firstnonce>'
-      '<mode>1</mode>'
-      '<loginflag>2</loginflag>'
-      '</request>',
+          '<username>${_xmlEscape(username)}</username>'
+          '<firstnonce>$firstNonce</firstnonce>'
+          '<mode>1</mode>'
+          '<loginflag>2</loginflag>'
+          '</request>',
     );
     _raiseForApiCode(challenge, 'challenge_login');
     final salt = _extractTag(challenge, 'salt');
     final iterations = int.parse(_extractTag(challenge, 'iterations'));
     final serverNonce = _extractTag(challenge, 'servernonce');
     if (salt.isEmpty || serverNonce.isEmpty) {
-      throw StateError('Login challenge response is missing salt or servernonce.');
+      throw StateError(
+          'Login challenge response is missing salt or servernonce.');
     }
 
     final clientProof = computeClientProof(
@@ -103,10 +104,10 @@ class CpeClient {
     final auth = await postXml(
       '/api/user/authentication_login',
       '<request>'
-      '<clientproof>$clientProof</clientproof>'
-      '<finalnonce>${_xmlEscape(serverNonce)}</finalnonce>'
-      '<loginflag>2</loginflag>'
-      '</request>',
+          '<clientproof>$clientProof</clientproof>'
+          '<finalnonce>${_xmlEscape(serverNonce)}</finalnonce>'
+          '<loginflag>2</loginflag>'
+          '</request>',
     );
     _raiseForApiCode(auth, 'authentication_login');
   }
@@ -127,14 +128,74 @@ class CpeClient {
     return parseFlat(await getXml('/api/net/current-plmn'));
   }
 
+  Future<Map<String, String>> deviceInfo() async {
+    return parseFlat(await getXml('/api/device/basic_information'));
+  }
+
+  Future<Map<String, String>> netMode() async {
+    return parseFlat(await getXml('/api/net/net-mode'));
+  }
+
+  Future<Map<String, List<Map<String, String>>>> neighborCells() async {
+    final data = parseFlat(await getXml('/api/device/nbrcellinfo'));
+    return <String, List<Map<String, String>>>{
+      'nr': parseCellList(data['nbrcell_nrlist'] ?? ''),
+      'lte': parseCellList(data['nbrcell_ltelist'] ?? ''),
+    };
+  }
+
+  Future<Map<String, List<Map<String, String>>>> secondaryCells() async {
+    final data = parseFlat(await getXml('/api/device/seccellinfo'));
+    return <String, List<Map<String, String>>>{
+      'nr': parseCellList(data['nrseccell_list'] ?? '', secondary: true),
+      'lte': parseCellList(data['lteseccell_list'] ?? '', secondary: true),
+    };
+  }
+
+  Future<Map<String, String>> antennaType() async {
+    return parseFlat(await getXml('/api/device/antenna_type'));
+  }
+
   Future<Map<String, dynamic>> snapshot() async {
     await login();
     return <String, dynamic>{
+      'device': await deviceInfo(),
       'signal': await deviceSignal(),
       'status': await monitoringStatus(),
       'traffic': await trafficStatistics(),
       'plmn': await currentPlmn(),
+      'netMode': await netMode(),
     };
+  }
+
+  Future<String> setNetMode({
+    String networkMode = '00',
+    String networkOption = '2',
+    String lteBandsHex = '7FFFFFFFFFFFFFFF',
+    String networkBandHex = '3FFFFFFF',
+  }) async {
+    await login();
+    return postXml(
+      '/api/net/net-mode',
+      '<request>'
+          '<NetworkMode>${_xmlEscape(networkMode)}</NetworkMode>'
+          '<NetworkBand>${_xmlEscape(networkBandHex)}</NetworkBand>'
+          '<LTEBand>${_xmlEscape(lteBandsHex)}</LTEBand>'
+          '<networkOption>${_xmlEscape(networkOption)}</networkOption>'
+          '</request>',
+    );
+  }
+
+  Future<String> unlockAll() async {
+    await login();
+    return postXml(
+      '/api/net/lock-freq',
+      '<?xml version="1.0" encoding="UTF-8"?>'
+          '<request>'
+          '<lte_info><lock_mode>0</lock_mode><freq_infos></freq_infos><all_bands></all_bands></lte_info>'
+          '<nr_info><lock_mode>0</lock_mode><freq_infos></freq_infos><all_bands></all_bands></nr_info>'
+          '</request>',
+    );
   }
 
   static String computeClientProof({
@@ -150,12 +211,14 @@ class CpeClient {
       iterations,
       32,
     );
-    final clientKey = Hmac(sha256, utf8.encode('Client Key')).convert(saltedPassword).bytes;
+    final clientKey =
+        Hmac(sha256, utf8.encode('Client Key')).convert(saltedPassword).bytes;
     final storedKey = sha256.convert(clientKey).bytes;
     final signature = Hmac(sha256, storedKey)
         .convert(utf8.encode('$firstNonce,$serverNonce,$serverNonce'))
         .bytes;
-    final proof = List<int>.generate(clientKey.length, (index) => clientKey[index] ^ signature[index]);
+    final proof = List<int>.generate(
+        clientKey.length, (index) => clientKey[index] ^ signature[index]);
     return _bytesToHex(proof);
   }
 
@@ -172,7 +235,8 @@ class CpeClient {
     final generated = <int>[];
     for (var block = 1; generated.length < keyLength; block += 1) {
       final blockIndex = ByteData(4)..setUint32(0, block, Endian.big);
-      var u = hmac.convert(<int>[...salt, ...blockIndex.buffer.asUint8List()]).bytes;
+      var u = hmac
+          .convert(<int>[...salt, ...blockIndex.buffer.asUint8List()]).bytes;
       final t = List<int>.from(u);
       for (var round = 1; round < iterations; round += 1) {
         u = hmac.convert(u).bytes;
@@ -192,6 +256,53 @@ class CpeClient {
       result[match.group(1)!] = _decodeXml(match.group(2)!.trim());
     }
     return result;
+  }
+
+  static List<Map<String, String>> parseCellList(String value,
+      {bool secondary = false}) {
+    if (value.trim().isEmpty) {
+      return <Map<String, String>>[];
+    }
+    final cells = <Map<String, String>>[];
+    for (final item in value.split(';')) {
+      final parts = item
+          .split(',')
+          .map((part) => part.trim())
+          .where((part) => part.isNotEmpty)
+          .toList();
+      if (secondary && parts.length >= 8) {
+        cells.add(<String, String>{
+          'earfcn': parts[0],
+          'band': parts[1],
+          'bw': parts[2],
+          'pci': parts[3],
+          'rsrp': parts[4],
+          'rsrq': parts[5],
+          'rssi': parts[6],
+          'sinr': parts[7],
+        });
+      } else if (!secondary && parts.length >= 7) {
+        cells.add(<String, String>{
+          'earfcn': parts[0],
+          'band': parts[1],
+          'pci': parts[2],
+          'rsrp': parts[3],
+          'rsrq': parts[4],
+          'rssi': parts[5],
+          'sinr': parts[6],
+        });
+      }
+    }
+    cells
+        .sort((a, b) => _rsrpValue(b['rsrp']).compareTo(_rsrpValue(a['rsrp'])));
+    return cells;
+  }
+
+  static double _rsrpValue(String? value) {
+    if (value == null) {
+      return -999;
+    }
+    return double.tryParse(value.replaceAll('dBm', '').trim()) ?? -999;
   }
 
   static String _extractTag(String xml, String tag) {
@@ -215,7 +326,8 @@ class CpeClient {
 
   static String _randomHex(int byteLength) {
     final random = Random.secure();
-    return _bytesToHex(List<int>.generate(byteLength, (_) => random.nextInt(256)));
+    return _bytesToHex(
+        List<int>.generate(byteLength, (_) => random.nextInt(256)));
   }
 
   static String _decodeXml(String value) {
@@ -250,14 +362,16 @@ class CpeClient {
   }
 
   void _applyHeaders(HttpClientRequest request) {
-    request.headers.set('User-Agent', 'CPEManager/0.1.0');
+    request.headers.set('User-Agent', 'CPEManager/0.2.0');
     request.headers.set('X-Requested-With', 'XMLHttpRequest');
     request.headers.set('Cache-Control', 'no-cache');
     request.headers.set('Pragma', 'no-cache');
     if (_cookies.isNotEmpty) {
       request.headers.set(
         HttpHeaders.cookieHeader,
-        _cookies.entries.map((entry) => '${entry.key}=${entry.value}').join('; '),
+        _cookies.entries
+            .map((entry) => '${entry.key}=${entry.value}')
+            .join('; '),
       );
     }
   }

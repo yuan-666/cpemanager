@@ -11,8 +11,8 @@ The project has two release tracks:
 | --- | --- | --- | --- |
 | Windows | Python desktop now, Flutter later | `.exe` or installer | PyInstaller can package the current GUI quickly. Flutter gives the long-term shared UI. |
 | macOS | Python desktop now, Flutter later | `.app`, `.dmg` later | Build/sign on macOS. Current repo can generate a PyInstaller `.app` from the Tkinter GUI. |
-| Android | Flutter | `.apk` / `.aab` | Needs Android SDK. The app must allow HTTP access to `192.168.8.1`. |
-| iOS | Flutter | `.ipa` through Xcode/TestFlight | Needs macOS, Xcode, signing, and local-network/HTTP permissions. |
+| Android | Flutter | `.apk` / `.aab` | Debug APK is locally verified. The app allows cleartext HTTP access to `192.168.8.1`. |
+| iOS | Flutter | `.ipa` through Xcode/TestFlight | Needs full Xcode, CocoaPods, signing, and local-network/HTTP permissions. Native build is not verified on this machine yet. |
 | HarmonyOS/OpenHarmony | Flutter for OpenHarmony | `.hap` / `.app` package | Use OpenHarmony-SIG `flutter_flutter`; not supported by upstream Flutter stable directly. |
 
 Reference links:
@@ -42,26 +42,54 @@ cpemanager-desktop
 
 ## Flutter Product Track
 
-This repo includes a starter Flutter source tree under `apps/flutter_cpemanager`. Because Flutter is not installed in this machine right now, the generated platform folders are intentionally not committed yet.
+This repo includes a Flutter source tree under `apps/flutter_cpemanager`. Native platform folders are generated for Android, iOS, macOS, Windows, and web. The app currently provides a mobile dashboard, Dart CPE login/client implementation, status reads, neighbor display, automatic network mode, and unlock-all with confirmation dialogs.
 
-After installing Flutter:
+Verified local Android environment:
+
+- Flutter `3.41.9`
+- Dart `3.11.5`
+- OpenJDK 17 at `/opt/homebrew/opt/openjdk@17`
+- Android SDK at `/opt/homebrew/share/android-commandlinetools`
+- Android SDK Platform 36
+- Android SDK Build Tools 36.0.0
+- Android NDK 28.2.13676358
+- CMake 3.22.1
+
+Common commands:
 
 ```bash
 cd apps/flutter_cpemanager
-flutter create --platforms=android,ios,windows,macos .
 flutter pub get
-flutter run -d macos
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 ```
 
-Release builds:
+Verified Android output:
+
+```text
+apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Install to a USB-connected Android phone with developer mode and USB debugging enabled:
+
+```bash
+adb install -r apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Future release builds:
 
 ```bash
 flutter build apk
 flutter build appbundle
-flutter build ios
+flutter build ios --no-codesign
 flutter build windows
 flutter build macos
+flutter build web
 ```
+
+iOS/macOS native Flutter builds are blocked on installing full Xcode and CocoaPods on this Mac. Windows builds must be produced on Windows.
 
 For HarmonyOS/OpenHarmony, install the OpenHarmony-SIG Flutter SDK and matching OpenHarmony/HarmonyOS SDK, then create/build the OHOS platform target with that SDK. Keep the Dart client in `lib/api/cpe_client.dart` platform-neutral.
 

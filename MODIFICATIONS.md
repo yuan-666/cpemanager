@@ -4,6 +4,35 @@
 
 ## 2026-05-13
 
+- 完成移动端 Android 可运行目标：
+  - 安装并验证 Flutter `3.41.9`、Dart `3.11.5`、OpenJDK 17、Android SDK 36、Build Tools 36.0.0、NDK 28.2.13676358、CMake 3.22.1。
+  - 在 `apps/flutter_cpemanager` 生成 Android、iOS、macOS、Windows、web 原生平台目录。
+  - 将 Flutter 占位页升级为移动端 CPE Dashboard：连接表单、状态指标、NR 邻区、原始快照、自动模式和解锁操作确认弹窗。
+  - 扩展 Dart CPE 客户端：设备信息、网络模式、邻区/辅小区、天线读取、自动网络模式、解除锁频、邻区解析。
+  - 新增 Dart 测试覆盖邻区列表按 RSRP 排序。
+  - Android 增加 `INTERNET` 权限、明文 HTTP 访问和正式包名 `com.cpemanager.app`，并同步迁移 `MainActivity` 包路径。
+  - iOS 增加局域网访问说明和 HTTP 放行；macOS 增加网络 client entitlement。
+  - 清理 iOS/macOS/Windows/web 的 Flutter 模板标识，统一到 CPE Manager 和 `com.cpemanager...` bundle id。
+  - 修复 Android 构建链路：Gradle wrapper 改用 `gradle-8.14-bin.zip`，Android 构建显式使用已安装的 Build Tools `36.0.0`。
+  - 已生成 Android debug APK：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`。
+  - 已生成 Web/PWA 产物：`apps/flutter_cpemanager/build/web`。
+  - 已验证：`flutter build apk --debug`、`flutter test`、`flutter analyze`、`flutter build web`。
+- 完成 GitHub OAuth workflow scope 修复：
+  - 通过 `gh auth login -h github.com --git-protocol https --web -s repo -s workflow -s read:org` 重新授权。
+  - `gh auth status -h github.com` 已显示 scopes：`gist`、`read:org`、`repo`、`workflow`。
+  - 已把桌面构建 workflow 正式启用为 `.github/workflows/desktop-build.yml`，并保留 `docs/github-actions/desktop-build.yml` 作为模板副本。
+- 版本推进到 `0.2.0`：
+  - 更新 `pyproject.toml`、`src/cpemanager/__init__.py`、`apps/flutter_cpemanager/pubspec.yaml`、Dart User-Agent、`README.md`、`CHANGELOG.md` 和打包策略文档。
+- 本轮验证结果：
+  - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug` 通过。
+  - `aapt dump badging` 确认 APK 包名 `com.cpemanager.app`、版本 `0.2.0`、启动 Activity `com.cpemanager.app.MainActivity`。
+  - `adb devices` 当前未发现已连接手机，因此尚未做真机安装启动验证。
+  - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test` 通过。
+  - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze` 通过。
+  - `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web` 通过。
+  - `conda run -n cpemanager python -m unittest discover -s tests` 通过，10 个测试 OK。
+  - `conda run -n cpemanager python -m compileall -q ...` 通过。
+  - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.2.0`。
 - 准备 GitHub 版本管理：
   - 新增 `CHANGELOG.md`，记录 `0.1.0` alpha 版本描述。
   - 更新 `README.md`，补版本、维护账号邮箱、项目内容、连续维护文档入口。

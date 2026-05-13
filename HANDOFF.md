@@ -11,12 +11,12 @@
 - 旧脚本兼容入口
 - Tkinter 桌面 GUI
 - PyInstaller 桌面构建脚本
-- Flutter 多端 App 骨架
+- Flutter 多端 App，Android debug APK 已可构建
 - API/打包文档和基础测试
 
-当前版本：`0.1.0`
+当前版本：`0.2.0`
 
-当前准备的首个提交描述：
+首个提交描述：
 
 ```text
 chore: initialize cpemanager app project
@@ -27,7 +27,7 @@ GitHub 同步状态：
 - 远程仓库：`https://github.com/yuan-666/cpemanager.git`
 - 分支：`main`
 - 首个提交：`b2cb9e4 chore: initialize cpemanager app project`
-- 当前计划追加文档提交：`docs: record github sync status`
+- 本轮建议提交描述：`feat: enable Android Flutter app`
 
 ## 先读文件
 
@@ -102,14 +102,42 @@ python tools/build_desktop.py --onedir
 
 - `dist/desktop/CPEManager.app`
 - `dist/desktop/CPEManager/CPEManager`
-- `dist/cpemanager-0.1.0-py3-none-any.whl`
+- `dist/cpemanager-0.1.0-py3-none-any.whl` 是上一个本地 wheel；版本已推进到 `0.2.0`，如需发布 Python 包请重新构建 wheel。
+
+移动端 Android：
+
+```bash
+cd apps/flutter_cpemanager
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+当前 Android APK：
+
+- `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`
+
+Web/PWA：
+
+```bash
+cd apps/flutter_cpemanager
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
+```
+
+当前 Web 产物：
+
+- `apps/flutter_cpemanager/build/web`
 
 ## 验证状态
 
 最近一次验证通过：
 
 ```bash
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
 conda run -n cpemanager python -m unittest discover -s tests
+conda run -n cpemanager cpemanager-desktop --version
 ```
 
 结果：
@@ -117,6 +145,7 @@ conda run -n cpemanager python -m unittest discover -s tests
 ```text
 Ran 10 tests in 0.001s
 OK
+CPE Manager 0.2.0
 ```
 
 编译检查通过：
@@ -135,12 +164,16 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 
 - 没有做真实 CPE 登录测试，因为需要真实密码并确认机器连到 `192.168.8.1`。
 - 没有做真实写操作测试，锁频/网络模式/天线切换可能影响设备网络，必须谨慎。
-- 当前机器未安装 `flutter` / `dart`，Flutter 骨架尚未本机构建验证。
+- `adb devices` 当前未发现已连接手机，所以 Android APK 尚未做真机安装启动验证。
+- Flutter `3.41.9` / Dart `3.11.5` 已安装并可构建 Android debug APK。
+- Android SDK 位于 `/opt/homebrew/share/android-commandlinetools`，OpenJDK 17 位于 `/opt/homebrew/opt/openjdk@17`。
+- 当前机器只有 Xcode Command Line Tools；iOS/macOS Flutter native build 仍需要完整 Xcode 和 CocoaPods。
 - HarmonyOS/OpenHarmony 不是 Flutter 官方主线支持目标，需要 OpenHarmony-SIG Flutter SDK 或 ArkTS 备选路线。
 - GitHub 仓库已由用户创建，仓库名与目录同名；`main` 已成功推送到该远程仓库。
 - 远程仓库 URL：`https://github.com/yuan-666/cpemanager.git`。
-- 2026-05-13 检查到 `gh auth status` 显示默认账号 token 已失效，但 `git push` 能使用已有凭据访问远程。
-- 当前 OAuth token 缺少 `workflow` scope，不能推送 `.github/workflows/*`；GitHub Actions 模板先放在 `docs/github-actions/desktop-build.yml`。
+- 2026-05-13 已通过 `gh auth login -h github.com --git-protocol https --web -s repo -s workflow -s read:org` 修复 GitHub CLI 授权。
+- 当前 GitHub token scopes 包含 `gist`、`read:org`、`repo`、`workflow`。
+- `.github/workflows/desktop-build.yml` 已启用；`docs/github-actions/desktop-build.yml` 保留为模板副本。
 
 ## 下一步建议
 
@@ -148,8 +181,9 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 2. 增加 fixtures：登录 challenge、authentication、signal、nbrcell、seccell、lock-freq、net-mode。
 3. 把 `format_status_summary()` 从 `HuaweiCPE` 客户端中拆到展示层。
 4. Tkinter GUI 增加安全写操作确认、锁频输入表单和状态恢复提示。
-5. 安装 Flutter 后，在 `apps/flutter_cpemanager` 执行 `flutter create --platforms=android,ios,windows,macos .` 并验证 Dart 登录算法。
-6. 用 GitHub Actions 在 Windows/macOS 分别构建桌面产物。
+5. 安装完整 Xcode 和 CocoaPods 后验证 iOS/macOS Flutter native build。
+6. 增加 Android release signing、`.aab` 构建和发布说明。
+7. 用 GitHub Actions 在 Windows/macOS 分别构建桌面产物。
 
 ## 接手纪律
 

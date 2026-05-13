@@ -1,0 +1,38 @@
+name: Desktop Build
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  desktop:
+    name: Desktop ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: python -m pip install -e ".[desktop-build]"
+
+      - name: Run tests
+        run: python -m unittest discover -s tests
+
+      - name: Build desktop app
+        run: python tools/build_desktop.py --onedir
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CPEManager-${{ matrix.os }}
+          path: dist/desktop/

@@ -15,7 +15,7 @@
 当前策略是两条线并行：
 
 - 快速桌面线：继续使用 Python 客户端 + Tkinter GUI + PyInstaller，优先覆盖 macOS/Windows。
-- 长期全平台线：使用 Flutter/Dart 重写协议层和 UI，覆盖 Android/iOS/Windows/macOS；HarmonyOS/OpenHarmony 需要单独可行性验证。
+- 长期全平台线：使用 Flutter/Dart 重写协议层和 UI，覆盖 Android/iOS/Windows/macOS/web；Android debug APK 已经可以本机构建，HarmonyOS/OpenHarmony 需要单独可行性验证。
 
 ## 当前环境
 
@@ -25,13 +25,22 @@
 - 远程仓库 URL：`https://github.com/yuan-666/cpemanager.git`。
 - `main` 已成功推送到 `origin/main`。
 - 首个提交：`b2cb9e4 chore: initialize cpemanager app project`。
-- 2026-05-13 检查到本机 `gh` 默认账号 `yuan-666` token 已失效；但 `git push` 可以通过已有凭据访问远程。
-- 当前 OAuth token 缺少 `workflow` scope，不能推送 `.github/workflows/*`。桌面构建 workflow 暂存为 `docs/github-actions/desktop-build.yml` 模板，重新授权后再复制到 `.github/workflows/desktop-build.yml`。
+- 2026-05-13 曾检查到本机 `gh` 默认账号 `yuan-666` token 失效；本轮已重新授权修复。
+- GitHub CLI 已重新授权，当前 token scopes 包含 `gist`、`read:org`、`repo`、`workflow`。
+- `.github/workflows/desktop-build.yml` 已正式启用；`docs/github-actions/desktop-build.yml` 保留为模板副本。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
 - 主要 Python 运行依赖：`requests`
 - 桌面打包依赖：`pyinstaller`
-- 当前机器没有安装 `flutter` / `dart`，所以 Flutter 骨架不能在本机验证构建。
+- Flutter：3.41.9
+- Dart：3.11.5
+- OpenJDK：`/opt/homebrew/opt/openjdk@17`
+- Android SDK：`/opt/homebrew/share/android-commandlinetools`
+- Android SDK Platform：36
+- Android SDK Build Tools：36.0.0
+- Android NDK：28.2.13676358
+- CMake：3.22.1
+- 当前机器只有 Xcode Command Line Tools；iOS/macOS Flutter native build 仍需要完整 Xcode 和 CocoaPods。
 
 常用命令：
 
@@ -136,7 +145,14 @@ PyInstaller 不能跨平台编译：
 
 Flutter 方向：
 
-- 代码骨架在 `apps/flutter_cpemanager`。
+- 代码在 `apps/flutter_cpemanager`。
+- Native 平台目录已经生成：Android、iOS、macOS、Windows、web。
+- Android debug APK 已验证产出：`apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`。
+- Web/PWA 已验证产出：`apps/flutter_cpemanager/build/web`。
+- Android 包名/namespace：`com.cpemanager.app`。
+- iOS bundle id：`com.cpemanager.app`；macOS bundle id：`com.cpemanager.app.macos`；Windows executable name：`CPEManager`；web manifest title：`CPE Manager`。
+- Android 允许明文 HTTP 访问 `192.168.8.1`；iOS 已配置局域网说明和 HTTP 放行；macOS 已配置 network client entitlement。
+- Gradle wrapper 使用 `gradle-8.14-bin.zip`；Android app 显式使用 Build Tools `36.0.0`，避免坏的 `35.0.0` 自动安装包阻塞构建。
 - Python 客户端是协议参考实现，不建议在移动端直接嵌 CPython。
 - Flutter 官方主线覆盖 Android/iOS/Windows/macOS。
 - HarmonyOS/OpenHarmony 需要 OpenHarmony-SIG Flutter SDK 或 ArkTS 备选方案，不要直接承诺已可发布。
@@ -163,7 +179,19 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w dist
 ```
 
+如果修改 Flutter app，再跑：
+
+```bash
+cd apps/flutter_cpemanager
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
+```
+
 实机 CPE 测试当前没有做过，因为需要真实密码和确认机器连接到 `192.168.8.1` 网络。写操作如锁频、网络模式、天线设置必须谨慎，后续应增加二次确认和只读 smoke test。
+
+Android APK 已构建，但 `adb devices` 当前未发现已连接手机，所以还没有做真机安装启动验证。
 
 ## 后续优先级
 
@@ -171,5 +199,6 @@ conda run -n cpemanager python -m pip wheel --no-deps --no-build-isolation . -w 
 2. 给登录流程、payload builder、XML parser 补 fixture/golden tests。
 3. 给写操作增加确认机制和恢复当前配置的保护。
 4. 完善 Tkinter GUI 的锁频输入、网络模式输入和错误提示。
-5. 安装 Flutter/Dart 后验证 `apps/flutter_cpemanager`。
-6. 做 HarmonyOS/OpenHarmony spike，验证 HTTP、crypto、XML、局域网权限和打包链路。
+5. 安装完整 Xcode 和 CocoaPods 后验证 iOS/macOS Flutter native build。
+6. 做 Android release signing 和 `.aab` 发布流程。
+7. 做 HarmonyOS/OpenHarmony spike，验证 HTTP、crypto、XML、局域网权限和打包链路。

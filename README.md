@@ -4,7 +4,7 @@ Huawei CPE management toolkit. The project has moved from separate proof-of-conc
 
 ## Version
 
-- Current version: `0.1.0`
+- Current version: `0.2.0`
 - Release state: alpha
 - Maintainer account email: `2991077067@qq.com`
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
@@ -17,9 +17,10 @@ Huawei CPE management toolkit. The project has moved from separate proof-of-conc
 - Legacy script compatibility for the original six scripts.
 - Tkinter desktop GUI command: `cpemanager-desktop`.
 - PyInstaller desktop build path for macOS and Windows.
-- Flutter/Dart app skeleton for Android, iOS, Windows, macOS, and a future HarmonyOS/OpenHarmony spike.
+- Flutter/Dart mobile-first app for Android, iOS, Windows, macOS, web, and a future HarmonyOS/OpenHarmony spike.
 - Unit tests, API notes, packaging strategy, and handoff documentation.
-- GitHub Actions desktop build template: [docs/github-actions/desktop-build.yml](docs/github-actions/desktop-build.yml)
+- Active GitHub Actions desktop build workflow: [.github/workflows/desktop-build.yml](.github/workflows/desktop-build.yml)
+- Workflow template copy: [docs/github-actions/desktop-build.yml](docs/github-actions/desktop-build.yml)
 
 ## Current Scope
 
@@ -110,16 +111,52 @@ dist/desktop/CPEManager.app
 
 PyInstaller builds are platform-local: build Windows artifacts on Windows and macOS artifacts on macOS.
 
-## Cross-Platform App Track
+## Mobile App
 
-The long-term app lives in `apps/flutter_cpemanager`. Flutter is the planned shared UI/client layer for Android, iOS, Windows, and macOS. HarmonyOS/OpenHarmony needs a separate validation pass with the OpenHarmony-SIG Flutter SDK.
+The phone app lives in `apps/flutter_cpemanager`. It is now a Flutter app with a Dart CPE client, mobile connection form, status dashboard, NR neighbor panel, raw snapshot panel, and guarded buttons for automatic network mode and unlock-all.
 
 ```bash
 cd apps/flutter_cpemanager
-flutter create --platforms=android,ios,windows,macos .
 flutter pub get
-flutter run -d macos
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
 ```
+
+Current verified Android debug APK:
+
+```text
+apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Install on an Android phone with USB debugging enabled:
+
+```bash
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+## Cross-Platform App Track
+
+Flutter is the shared UI/client layer for Android, iOS, Windows, macOS, and web. Native platform folders have been generated under `apps/flutter_cpemanager` for Android, iOS, macOS, Windows, and web.
+
+Useful commands:
+
+```bash
+cd apps/flutter_cpemanager
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter test
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter analyze
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug
+JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build web
+flutter build appbundle
+flutter build ios --no-codesign
+flutter build macos
+flutter build windows
+```
+
+Notes:
+
+- Android builds are verified locally with Flutter `3.41.9`, Dart `3.11.5`, OpenJDK 17, Android SDK 36, Build Tools 36.0.0, and NDK 28.2.13676358.
+- iOS and macOS Flutter native builds require full Xcode and CocoaPods; the current machine only has Command Line Tools, so those builds are not verified yet.
+- Windows artifacts must be built on Windows.
+- HarmonyOS/OpenHarmony needs a separate validation pass with the OpenHarmony-SIG Flutter SDK.
 
 Legacy scripts are kept as compatibility wrappers. These commands match the earlier manual:
 
@@ -167,7 +204,11 @@ Detailed API notes live in [docs/API_REFERENCE.md](docs/API_REFERENCE.md).
 Packaging notes live in [docs/APP_PACKAGING_STRATEGY.md](docs/APP_PACKAGING_STRATEGY.md).
 Project continuity notes live in [PROJECT_MEMORY.md](PROJECT_MEMORY.md).
 
-Note: the GitHub Actions workflow is stored as a template under `docs/github-actions/desktop-build.yml`. Copy it to `.github/workflows/desktop-build.yml` after authenticating GitHub with `workflow` scope.
+GitHub Actions is active under `.github/workflows/desktop-build.yml`. If a future token loses workflow permission, refresh it with:
+
+```bash
+gh auth refresh -h github.com -s workflow
+```
 
 ## Release Roadmap
 
