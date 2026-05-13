@@ -21,6 +21,8 @@
   - 通过 `gh auth login -h github.com --git-protocol https --web -s repo -s workflow -s read:org` 重新授权。
   - `gh auth status -h github.com` 已显示 scopes：`gist`、`read:org`、`repo`、`workflow`。
   - 已把桌面构建 workflow 正式启用为 `.github/workflows/desktop-build.yml`，并保留 `docs/github-actions/desktop-build.yml` 作为模板副本。
+  - 功能提交已推送到 GitHub：`caf42c9 feat: enable Android Flutter app`。
+  - `gh workflow list --repo yuan-666/cpemanager` 已确认 `Desktop Build` workflow 为 active。
 - 版本推进到 `0.2.0`：
   - 更新 `pyproject.toml`、`src/cpemanager/__init__.py`、`apps/flutter_cpemanager/pubspec.yaml`、Dart User-Agent、`README.md`、`CHANGELOG.md` 和打包策略文档。
 - 本轮验证结果：

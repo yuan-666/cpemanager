@@ -27,7 +27,8 @@ GitHub 同步状态：
 - 远程仓库：`https://github.com/yuan-666/cpemanager.git`
 - 分支：`main`
 - 首个提交：`b2cb9e4 chore: initialize cpemanager app project`
-- 本轮建议提交描述：`feat: enable Android Flutter app`
+- 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`
+- GitHub Actions：`Desktop Build` workflow 已 active。
 
 ## 先读文件
 

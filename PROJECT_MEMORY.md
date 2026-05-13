@@ -28,6 +28,8 @@
 - 2026-05-13 曾检查到本机 `gh` 默认账号 `yuan-666` token 失效；本轮已重新授权修复。
 - GitHub CLI 已重新授权，当前 token scopes 包含 `gist`、`read:org`、`repo`、`workflow`。
 - `.github/workflows/desktop-build.yml` 已正式启用；`docs/github-actions/desktop-build.yml` 保留为模板副本。
+- `gh workflow list --repo yuan-666/cpemanager` 已确认 `Desktop Build` workflow 为 active。
+- 本轮移动端功能提交：`caf42c9 feat: enable Android Flutter app`。
 - conda 环境名：`cpemanager`
 - Python：3.11.15
 - 主要 Python 运行依赖：`requests`
