@@ -84,7 +84,7 @@ The previous `v0.2.0` GitHub Release includes Android release/debug APKs, a macO
 
 The `v0.3.1` GitHub Release includes Android release/debug APKs, a macOS arm64 desktop `.app.zip`, a Web/PWA zip, the Python wheel, and `SHA256SUMS.txt`. The Flutter app version is `0.3.1+4`.
 
-The local `v0.3.2` build line is for the Fiberhome readback and mobile dashboard usability fixes. Its Flutter app version is `0.3.2+5`; Android debug/release APKs are staged under `dist/release/v0.3.2/`.
+The `v0.3.2` build line is for the Fiberhome readback and mobile dashboard usability fixes. Its Flutter app version is `0.3.2+5`; Android debug/release APKs are staged locally under `dist/release/v0.3.2/`, but the GitHub Release uploads only the release APK and checksum file. The full debug APK stays local because of its size.
 
 Install to a USB-connected Android phone with developer mode and USB debugging enabled:
 

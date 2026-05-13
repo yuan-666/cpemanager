@@ -34,13 +34,11 @@ GitHub 同步状态：
 - 本轮烽火看板提交：`70b42b6 feat: add fiberhome mobile dashboard`
 - 本轮登录修复方向：华为 `SesTokInfo` token 队列；烽火 `get_refresh_sessionid` + `app_do_login` + `app_get_base_info`
 - GitHub Actions：`Desktop Build` workflow 已 active。
-- 发布说明：`docs/releases/v0.3.1.md`
-- GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1`
-- Release assets 已确认全部上传完成。
-- 本轮登录修复和烽火 base_info 改动已整理为 `v0.3.1` GitHub Release；本地 APK 已重新构建。
-- 当前未发布修复：烽火 `FHTOOLAPIS` POST 已改为固定 `Content-Length`，每次 POST 前刷新 `get_refresh_sessionid`，并绕过桌面代理直连 LAN，解决本机复现的 403。
-- 当前未发布 UI 迭代：移动端新增 5 秒自动刷新、简洁/专业模式、SIM 信息卡、射频调制小指标、可扩展设备档案下拉，并修复小屏指标卡溢出和登录页继承滚动位置的问题。
-- 当前本地版本推进：`0.3.2` / Flutter `0.3.2+5`，已执行 `flutter clean` 后重建 Android debug/release APK，两个包均由 `aapt` 确认为 `versionName=0.3.2`、`versionCode=5`。
+- 发布说明：`docs/releases/v0.3.2.md`
+- GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.2`
+- `v0.3.2` Release 只上传 release APK 和 `SHA256SUMS.txt`；完整 debug APK 已构建并保留在本地 `dist/release/v0.3.2/`。
+- 本轮登录修复、烽火 base_info 读取、403 修复和移动看板迭代已整理为 `v0.3.2`。
+- 当前本地版本推进：`0.3.2` / Flutter `0.3.2+5`，已执行 `flutter clean` 后重建 Android debug/release APK，两个包均由 `aapt` 确认为 `versionName=0.3.2`、`versionCode=5`；GitHub Release 只上传 release APK，完整 debug APK 仅本地保留。
 
 ## 先读文件
 
@@ -145,8 +143,8 @@ CPE_PASSWORD="管理密码" conda run -n cpemanager python tools/fiberhome_reado
 Release assets staging:
 
 - `dist/release/v0.3.2/CPEManager-android-v0.3.2-release.apk`
-- `dist/release/v0.3.2/CPEManager-android-v0.3.2-debug.apk`
-- `dist/release/v0.3.2/SHA256SUMS.txt`
+- `dist/release/v0.3.2/CPEManager-android-v0.3.2-debug.apk`（local-only，不上传 GitHub Release）
+- `dist/release/v0.3.2/SHA256SUMS.txt`（release APK checksum）
 - `dist/release/v0.3.1/CPEManager-android-v0.3.1-release.apk`
 - `dist/release/v0.3.1/CPEManager-android-v0.3.1-debug.apk`
 - `dist/release/v0.3.1/CPEManager-macos-arm64-v0.3.1-app.zip`

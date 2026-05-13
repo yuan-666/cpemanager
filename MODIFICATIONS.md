@@ -11,10 +11,11 @@
   - 新增本地构建说明：`docs/releases/v0.3.2.md`。
   - 已重建 Android debug/release APK，并整理到 `dist/release/v0.3.2/`：
     - `CPEManager-android-v0.3.2-release.apk`
-    - `CPEManager-android-v0.3.2-debug.apk`
+    - `CPEManager-android-v0.3.2-debug.apk`（完整 debug 包，仅本地保留，不上传 GitHub Release）
     - `SHA256SUMS.txt`
   - 2026-05-13 重新执行 `flutter clean` 后重建 Android debug/release APK，修复 debug 包可能沿用旧构建缓存的问题。
   - `aapt dump badging` 确认 debug/release APK：包名 `com.cpemanager.app`、版本 `0.3.2`、versionCode `5`。
+  - 按用户要求，`v0.3.2` GitHub Release 只上传 release APK 和校验文件，debug APK 因体积较大只保留本地。
   - `conda run -n cpemanager cpemanager-desktop --version` 输出 `CPE Manager 0.3.2`。
 - 优化移动端烽火看板显示：
   - 修复截图中 `BOTTOM OVERFLOWED` 红条：`DenseKvGrid` 改为固定高度网格，数值使用自适应缩放，长字段不再撑爆卡片。

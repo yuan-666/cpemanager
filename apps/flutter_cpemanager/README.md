@@ -40,9 +40,9 @@ Web/PWA output:
 build/web
 ```
 
-GitHub Release `v0.3.1` uploads the packaged Android APKs, Web/PWA zip, macOS desktop zip, Python wheel, and checksums.
+GitHub Release `v0.3.2` uploads the packaged Android release APK and checksum file. The previous `v0.3.1` release also includes Web/PWA, macOS desktop, Python wheel, and debug APK assets.
 
-The current local APKs are rebuilt from the `0.3.2+5` Flutter app state and staged in `dist/release/v0.3.2/`:
+The current local APKs are rebuilt from the `0.3.2+5` Flutter app state and staged in `dist/release/v0.3.2/`. GitHub Release `v0.3.2` uploads only the release APK and checksum file; the full debug APK stays local because of its size.
 
 ```text
 build/app/outputs/flutter-apk/app-debug.apk

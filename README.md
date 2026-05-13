@@ -5,26 +5,28 @@ Huawei CPE management toolkit, now expanding into a multi-vendor CPE app. The pr
 ## Version
 
 - Current local build version: `0.3.2`
-- Current published version: `0.3.1`
+- Current published version: `0.3.2`
 - Current Flutter app version: `0.3.2+5`
 - Release state: alpha
 - Maintainer account email: `2991077067@qq.com`
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 - Current build notes: [docs/releases/v0.3.2.md](docs/releases/v0.3.2.md)
-- Latest published release notes: [docs/releases/v0.3.1.md](docs/releases/v0.3.1.md)
+- Latest published release notes: [docs/releases/v0.3.2.md](docs/releases/v0.3.2.md)
 - Handoff docs: [HANDOFF.md](HANDOFF.md), [PROJECT_MEMORY.md](PROJECT_MEMORY.md), [MODIFICATIONS.md](MODIFICATIONS.md)
 
 ## Latest Release Assets
 
-Release `v0.3.1` is published at [GitHub Releases](https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1).
+Release `v0.3.2` is published at [GitHub Releases](https://github.com/yuan-666/cpemanager/releases/tag/v0.3.2).
 
-Local `v0.3.2` Android APKs are staged under `dist/release/v0.3.2/`:
+GitHub Release `v0.3.2` intentionally uploads only the release APK and checksum file. The full debug APK is large, so it is kept local under `dist/release/v0.3.2/` for troubleshooting.
 
 | Asset | Use |
 | --- | --- |
-| `CPEManager-android-v0.3.2-release.apk` | Recommended Android phone test package. |
-| `CPEManager-android-v0.3.2-debug.apk` | Debug Android package for troubleshooting. |
-| `SHA256SUMS.txt` | Checksums for the local APK assets. |
+| `CPEManager-android-v0.3.2-release.apk` | Recommended Android phone install package uploaded to GitHub Release. |
+| `SHA256SUMS.txt` | Release APK checksum uploaded to GitHub Release. |
+| `CPEManager-android-v0.3.2-debug.apk` | Full local-only debug package for troubleshooting; not uploaded. |
+
+Previous `v0.3.1` release assets:
 
 | Asset | Use |
 | --- | --- |

@@ -6,6 +6,12 @@ All notable changes to this project are documented here.
 
 Fiberhome readback and mobile dashboard usability release.
 
+### Release Assets
+
+- `CPEManager-android-v0.3.2-release.apk`
+- `SHA256SUMS.txt`
+- Full debug APK is built and kept local at `dist/release/v0.3.2/CPEManager-android-v0.3.2-debug.apk`; it is not uploaded because of its size.
+
 ### Fixed
 
 - Fixed Fiberhome/烽火 HTTP 403 on `FHTOOLAPIS` JSON POST calls by sending a fixed `Content-Length` body instead of Dart's default chunked transfer.
@@ -34,7 +40,8 @@ Fiberhome readback and mobile dashboard usability release.
 - `conda run -n cpemanager python -m compileall -q src tests cpe_login.py cpe_signal.py cpe_nbr.py cpe_lock.py cpe_netmode.py cpe_antenna.py tools/build_desktop.py tools/fiberhome_readonly_smoke.py packaging/desktop_entry.py`
 - `conda run -n cpemanager cpemanager-desktop --version`
 - `flutter clean` followed by fresh debug/release APK rebuilds.
-- `aapt dump badging` confirmed both Android debug and release APKs use `versionName='0.3.2'` and `versionCode='5'`.
+- `aapt dump badging` confirmed the full local debug APK and uploaded release APK use `versionName='0.3.2'` and `versionCode='5'`.
+- GitHub Release `v0.3.2` uploads only the release APK and checksum file; the full debug APK is kept local because of its size.
 - Local Fiberhome read-only probe with the real device password: `get_refresh_sessionid`, `app_do_login`, `app_get_base_info`, `app_get_airplane`, `app_get_network_info`, `app_get_lockband`, and `app_get_cell_list` return HTTP 200.
 
 ## 0.3.1 - 2026-05-13

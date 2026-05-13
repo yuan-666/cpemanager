@@ -36,8 +36,8 @@
 - 2026-05-13 已确认 release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
 - 当前开发版本：Python `0.3.2`，Flutter App `0.3.2+5`。
 - 当前本地 `v0.3.2` Android 产物：`dist/release/v0.3.2/CPEManager-android-v0.3.2-release.apk`、`dist/release/v0.3.2/CPEManager-android-v0.3.2-debug.apk`、`dist/release/v0.3.2/SHA256SUMS.txt`。
-- `v0.3.2` debug/release APK 已在 `flutter clean` 后重建，并由 `aapt dump badging` 确认：`versionName=0.3.2`、`versionCode=5`、包名 `com.cpemanager.app`。
-- 最近已发布版本：`v0.3.1`，GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.1`。
+- `v0.3.2` debug/release APK 已在 `flutter clean` 后重建，并由 `aapt dump badging` 确认：`versionName=0.3.2`、`versionCode=5`、包名 `com.cpemanager.app`。GitHub Release 只上传 release APK 和校验文件，完整 debug APK 仅本地保留。
+- 最近已发布版本：`v0.3.2`，GitHub Release URL：`https://github.com/yuan-666/cpemanager/releases/tag/v0.3.2`。
 - 2026-05-13 已确认 `v0.3.1` release 包含 6 个 uploaded assets：release APK、debug APK、macOS arm64 app zip、Web/PWA zip、Python wheel、SHA256SUMS。
 - 2026-05-13 本机烽火 403 排查确认：`FHTOOLAPIS` JSON POST 必须发送固定 `Content-Length`，并且每次 POST 前都要重新 `get_refresh_sessionid`；chunked transfer 或复用登录 sessionid 都会返回 HTTP 403；LAN CPE 请求还应绕过桌面代理直连。
 - 2026-05-13 移动端看板方向：设备选择使用可扩展“设备档案”下拉；状态读取后默认每 5 秒自动刷新；用户可在简洁/专业模式间切换，简洁模式翻译字段，专业模式保留源参数名。
