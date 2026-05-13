@@ -22,11 +22,18 @@ class CpeClient {
   final Map<String, String> _cookies = <String, String>{};
   String _requestToken = '';
 
+  String get _normalizedHost {
+    return host
+        .trim()
+        .replaceFirst(RegExp(r'^https?://'), '')
+        .replaceFirst(RegExp(r'/$'), '');
+  }
+
   Uri _uri(String endpoint) {
     if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
       return Uri.parse(endpoint);
     }
-    return Uri.parse('http://$host$endpoint');
+    return Uri.parse('http://$_normalizedHost$endpoint');
   }
 
   Future<String> getXml(String endpoint) async {
@@ -362,7 +369,7 @@ class CpeClient {
   }
 
   void _applyHeaders(HttpClientRequest request) {
-    request.headers.set('User-Agent', 'CPEManager/0.2.0');
+    request.headers.set('User-Agent', 'CPEManager/0.3.0');
     request.headers.set('X-Requested-With', 'XMLHttpRequest');
     request.headers.set('Cache-Control', 'no-cache');
     request.headers.set('Pragma', 'no-cache');

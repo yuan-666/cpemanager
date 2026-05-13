@@ -4,17 +4,20 @@
 
 ## 快速背景
 
-这是 `/Users/yuanhuang/code/cpemanager` 下的 Huawei CPE 管理工具。项目最初只有 6 个 Python 脚本，现在已经整理成：
+这是 `/Users/yuanhuang/code/cpemanager` 下的 CPE 管理工具。项目最初只有 6 个 Huawei Python 脚本，现在已经整理成：
 
 - 可安装 Python 包
 - 统一 CLI
 - 旧脚本兼容入口
 - Tkinter 桌面 GUI
 - PyInstaller 桌面构建脚本
-- Flutter 多端 App，Android debug APK 已可构建
+- Flutter 多端 App，Android debug/release APK 已可构建
+- Flutter App 已加入 Huawei/Fiberhome(烽火) 设备选择；烽火当前是基于 HAR 的配置操作 alpha 适配
 - API/打包文档和基础测试
 
-当前版本：`0.2.0`
+当前发布版本：`0.2.0`
+
+当前 Flutter App 开发版本：`0.3.0+3`
 
 首个提交描述：
 
@@ -32,6 +35,7 @@ GitHub 同步状态：
 - 发布说明：`docs/releases/v0.2.0.md`
 - GitHub Release：`https://github.com/yuan-666/cpemanager/releases/tag/v0.2.0`
 - Release assets 已确认全部上传完成。
+- 这轮 Flutter/Fiberhome 改动尚未创建新的 GitHub Release；本地 APK 已重新构建。
 
 ## 先读文件
 
@@ -47,6 +51,8 @@ GitHub 同步状态：
 8. `src/cpemanager/cli.py`
 9. `src/cpemanager/gui.py`
 10. `apps/flutter_cpemanager/lib/api/cpe_client.dart`
+11. `apps/flutter_cpemanager/lib/api/fiberhome_client.dart`
+12. `apps/flutter_cpemanager/lib/domain/cell_math.dart`
 
 ## 环境准备
 
@@ -120,6 +126,7 @@ adb install -r build/app/outputs/flutter-apk/app-debug.apk
 
 - `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-debug.apk`
 - `apps/flutter_cpemanager/build/app/outputs/flutter-apk/app-release.apk`
+- 当前本地 APK 来自 Flutter app `0.3.0+3`。
 
 Release assets staging:
 
@@ -165,6 +172,17 @@ OK
 CPE Manager 0.2.0
 ```
 
+本轮 Flutter/Fiberhome 验证额外确认：
+
+```bash
+flutter test
+flutter analyze
+flutter build web
+conda run -n cpemanager python -m unittest discover -s tests
+```
+
+Flutter 测试当前 5 个用例通过；`flutter analyze` 无问题。
+
 编译检查通过：
 
 ```bash
@@ -181,6 +199,8 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 
 - 没有做真实 CPE 登录测试，因为需要真实密码并确认机器连到 `192.168.8.1`。
 - 没有做真实写操作测试，锁频/网络模式/天线切换可能影响设备网络，必须谨慎。
+- 烽火 HAR 只覆盖 `POST /api/tmp/FHTOOLAPIS` 的配置接口，未覆盖 session 获取、实时信号、流量、设备信息和邻区状态；当前 App 要求手动输入 `sessionid`。
+- 不要提交 `烽火/*.har` 或其他原始 HAR，里面可能包含 live `sessionid`。
 - `adb devices` 当前未发现已连接手机，所以 Android APK 尚未做真机安装启动验证。
 - Flutter `3.41.9` / Dart `3.11.5` 已安装并可构建 Android debug APK。
 - Android SDK 位于 `/opt/homebrew/share/android-commandlinetools`，OpenJDK 17 位于 `/opt/homebrew/opt/openjdk@17`。
@@ -195,12 +215,13 @@ conda run -n cpemanager python tools/build_desktop.py --onedir
 ## 下一步建议
 
 1. 新增 live smoke test：默认只读，使用 `CPE_HOST/CPE_USERNAME/CPE_PASSWORD`，写操作必须显式 `CPE_ALLOW_WRITE=1`。
-2. 增加 fixtures：登录 challenge、authentication、signal、nbrcell、seccell、lock-freq、net-mode。
-3. 把 `format_status_summary()` 从 `HuaweiCPE` 客户端中拆到展示层。
-4. Tkinter GUI 增加安全写操作确认、锁频输入表单和状态恢复提示。
-5. 安装完整 Xcode 和 CocoaPods 后验证 iOS/macOS Flutter native build。
-6. 增加 Android release signing、`.aab` 构建和发布说明。
-7. 用 GitHub Actions 在 Windows/macOS 分别构建桌面产物。
+2. 继续补抓烽火登录/session 获取、实时信号、流量、设备信息和邻区状态接口。
+3. 增加 fixtures：Huawei 登录 challenge、authentication、signal、nbrcell、seccell、lock-freq、net-mode；Fiberhome `FHTOOLAPIS` 的六个方法。
+4. 把 `format_status_summary()` 从 `HuaweiCPE` 客户端中拆到展示层。
+5. Tkinter GUI 增加安全写操作确认、锁频输入表单和状态恢复提示。
+6. 安装完整 Xcode 和 CocoaPods 后验证 iOS/macOS Flutter native build。
+7. 增加 Android release signing、`.aab` 构建和发布说明。
+8. 用 GitHub Actions 在 Windows/macOS 分别构建桌面产物。
 
 ## 接手纪律
 

@@ -42,7 +42,7 @@ cpemanager-desktop
 
 ## Flutter Product Track
 
-This repo includes a Flutter source tree under `apps/flutter_cpemanager`. Native platform folders are generated for Android, iOS, macOS, Windows, and web. The app currently provides a mobile dashboard, Dart CPE login/client implementation, status reads, neighbor display, automatic network mode, and unlock-all with confirmation dialogs.
+This repo includes a Flutter source tree under `apps/flutter_cpemanager`. Native platform folders are generated for Android, iOS, macOS, Windows, and web. The app currently provides a dense mobile dashboard, Huawei/Fiberhome device selection, Dart CPE clients, status reads for Huawei, Fiberhome configuration calls from HAR, neighbor/lock-cell display, automatic network mode, Band/cell lock controls, and confirmation dialogs.
 
 Verified local Android environment:
 
@@ -81,6 +81,8 @@ dist/release/v0.2.0/
 ```
 
 The `v0.2.0` GitHub Release includes Android release/debug APKs, a macOS arm64 desktop `.app.zip`, a Web/PWA zip, the Python wheel, and `SHA256SUMS.txt`.
+
+Current unreleased Flutter app version is `0.3.0+3`; local Android debug/release APKs have been rebuilt from this state, but a new GitHub Release has not yet been cut.
 
 Install to a USB-connected Android phone with developer mode and USB debugging enabled:
 
@@ -127,3 +129,5 @@ The Flutter client should mirror these methods:
 - `setAntennaType`
 
 Before mobile releases, add recorded XML fixtures for every supported endpoint and run the same parser tests in Python and Dart.
+
+Fiberhome/烽火 is a separate adapter because the captured device uses JSON `FHTOOLAPIS` methods rather than Huawei XML endpoints. Do not commit raw HAR files; they can contain live `sessionid` values.

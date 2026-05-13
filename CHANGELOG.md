@@ -2,6 +2,44 @@
 
 All notable changes to this project are documented here.
 
+## Unreleased - 2026-05-13
+
+Mobile dashboard and Fiberhome device-adapter iteration.
+
+### Added
+
+- Reworked the Flutter app into a denser dark toolboard UI with device selection, status chips, PCC/signal panels, carrier/neighbor panels, lock-frequency controls, speed/raw views, and responsive mobile stacking.
+- Added a Fiberhome/烽火 Dart client for the captured `POST /api/tmp/FHTOOLAPIS` API shape:
+  - `app_get_network_info`
+  - `app_set_network_info`
+  - `app_get_lockband`
+  - `app_set_lockband`
+  - `app_get_cell_list`
+  - `app_set_cell_list`
+- Added Fiberhome configuration actions for Auto/LTE/SA/NSA mode, lock Band, NR lock cell, 4G+5G combined lock cell, and clear locked cells.
+- Added shared cell math helpers for TAC decimal conversion, LTE ECI (`eNB ID * 256 + cell ID`), NR GCI (`gNB ID * 4096 + cell ID`), and ECI/GCI splitting.
+- Added Dart tests for TAC/ECI/GCI conversion and Fiberhome lock-cell payload shape.
+
+### Changed
+
+- Bumped the Flutter app package version to `0.3.0+3`; the Python package remains at the published `0.2.0` release until the next full release bundle is cut.
+- Hardened the Dart Huawei and Fiberhome clients so host input can include or omit `http://`.
+- Ignored raw `.har` captures because they can contain live `sessionid` values and device identifiers.
+
+### Verified
+
+- `flutter test`
+- `flutter analyze`
+- `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --debug`
+- `JAVA_HOME=/opt/homebrew/opt/openjdk@17 flutter build apk --release`
+- `flutter build web`
+- `conda run -n cpemanager python -m unittest discover -s tests`
+
+### Notes
+
+- The current Fiberhome HAR set only covers configuration operations through `FHTOOLAPIS`; it does not include the session acquisition/login flow, live RF signal, traffic, device info, or neighbor-cell status endpoints.
+- The rebuilt Android APKs are local artifacts at `apps/flutter_cpemanager/build/app/outputs/flutter-apk/` and are not yet uploaded as a new GitHub Release.
+
 ## 0.2.0 - 2026-05-13
 
 Mobile and workflow enablement release.

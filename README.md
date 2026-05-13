@@ -1,10 +1,11 @@
 # CPE Manager
 
-Huawei CPE management toolkit. The project has moved from separate proof-of-concept scripts into a package with a single CLI, reusable client, desktop GUI, tests, and release-ready packaging metadata.
+Huawei CPE management toolkit, now expanding into a multi-vendor CPE app. The project has moved from separate proof-of-concept scripts into a package with a single CLI, reusable client, desktop GUI, Flutter mobile app, tests, and release-ready packaging metadata.
 
 ## Version
 
-- Current version: `0.2.0`
+- Current published version: `0.2.0`
+- Current Flutter app development version: `0.3.0+3`
 - Release state: alpha
 - Maintainer account email: `2991077067@qq.com`
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
@@ -44,6 +45,7 @@ python -m pip install cpemanager-0.2.0-py3-none-any.whl
 - Tkinter desktop GUI command: `cpemanager-desktop`.
 - PyInstaller desktop build path for macOS and Windows.
 - Flutter/Dart mobile-first app for Android, iOS, Windows, macOS, web, and a future HarmonyOS/OpenHarmony spike.
+- Flutter app now includes a Huawei/Fiberhome device selector; Fiberhome support is alpha and based on captured `FHTOOLAPIS` configuration calls.
 - Unit tests, API notes, packaging strategy, and handoff documentation.
 - Active GitHub Actions desktop build workflow: [.github/workflows/desktop-build.yml](.github/workflows/desktop-build.yml)
 - Workflow template copy: [docs/github-actions/desktop-build.yml](docs/github-actions/desktop-build.yml)
@@ -73,6 +75,12 @@ Additional discovered device APIs used by existing scripts:
 - `/api/device/basic_information`
 - `/api/device/antenna_type`
 - `/config/network/bandfreqlist.xml`
+
+Fiberhome/烽火 alpha APIs captured from HAR:
+
+- `POST /api/tmp/FHTOOLAPIS` with JSON body fields `ajaxmethod`, `sessionid`, and `dataObj`.
+- Confirmed methods: `app_get_network_info`, `app_set_network_info`, `app_get_lockband`, `app_set_lockband`, `app_get_cell_list`, `app_set_cell_list`.
+- The HAR set did not include session acquisition, live signal, traffic, device-info, or neighbor-cell endpoints, so those remain pending for Fiberhome.
 
 ## Conda Setup
 
@@ -139,7 +147,18 @@ PyInstaller builds are platform-local: build Windows artifacts on Windows and ma
 
 ## Mobile App
 
-The phone app lives in `apps/flutter_cpemanager`. It is now a Flutter app with a Dart CPE client, mobile connection form, status dashboard, NR neighbor panel, raw snapshot panel, and guarded buttons for automatic network mode and unlock-all.
+The phone app lives in `apps/flutter_cpemanager`. It is a Flutter app with a dense dark dashboard, device selector, PCC/signal panels, carrier and neighbor panels, raw snapshot panel, and guarded configuration actions.
+
+Current mobile device modes:
+
+- Huawei: password login, signal/status/traffic/PLMN reads, neighbor reads, automatic network mode, and unlock-all.
+- Fiberhome/烽火: manual `sessionid` entry for the captured `FHTOOLAPIS` flow, Auto/LTE/SA/NSA mode writes, lock Band, NR lock cell, 4G+5G combined lock cell, clear lock-cell list, and readback of network/lock state.
+
+Cell calculations shown in the app:
+
+- LTE ECI = `eNB ID * 256 + cell ID`
+- NR GCI = `gNB ID * 4096 + cell ID`
+- TAC hex values are also displayed as decimal where the source field exists.
 
 ```bash
 cd apps/flutter_cpemanager
